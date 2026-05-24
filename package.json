@@ -3,22 +3,9 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "build": "turbo run build",
-    "dev": "turbo run dev",
-    "lint": "turbo run lint",
-    "test": "turbo run test",
-    "db:generate": "turbo run db:generate",
-    "db:push": "turbo run db:push",
-    "db:migrate": "turbo run db:migrate",
-    "db:seed": "turbo run db:seed",
-    "db:studio": "turbo run db:studio"
+    "dev": "cd apps/web && npm run dev",
+    "build": "cd apps/web && npm run build",
+    "start": "cd apps/web && npm run start"
   },
-  "devDependencies": {
-    "turbo": "^1.13.0"
-  },
-  "packageManager": "pnpm@8.15.0",
-  "engines": {
-    "node": ">=20.0.0",
-    "pnpm": ">=8.0.0"
-  }
+  "engines": { "node": ">=20.0.0" }
 }
