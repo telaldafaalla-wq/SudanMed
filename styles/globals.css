@@ -1,4 +1,9 @@
-@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap');
+/* ── SudanMed Google Fonts ── */
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&family=Amiri:wght@400;700&display=swap');
+
+/* ── SudanMed الثيم الوطني والأنيميشن ── */
+@import url('./theme.css');
+@import url('./animations.css');
 
 @tailwind base;
 @tailwind components;
@@ -11,11 +16,15 @@
 html {
   direction: rtl;
   font-family: 'Cairo', sans-serif;
+  scroll-behavior: smooth;
 }
 
 body {
-  background: #f8fafc;
-  color: #1e293b;
+  background: var(--bg-primary, #050505);
+  color: var(--text-primary, #F0EDE8);
+  font-family: var(--font-arabic, 'Cairo', sans-serif);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
 }
 
 @layer utilities {
