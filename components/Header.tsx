@@ -1,112 +1,241 @@
 import Link from 'next/link'
 import { useState } from 'react'
-import { ShoppingCart, Search, Menu, X, Phone, Package } from 'lucide-react'
+import { ShoppingCart, Search, Menu, X, Package } from 'lucide-react'
+
+const C = {
+  red:       '#D21034',
+  redDark:   '#9A0B25',
+  black:     '#000000',
+  green:     '#007229',
+  greenDark: '#004F1C',
+  greenLight:'#00A33C',
+}
 
 export default function Header() {
-  const [menuOpen, setMenuOpen] = useState(false)
-  const [cartCount] = useState(0)
+  const [menuOpen,  setMenuOpen]  = useState(false)
+  const [cartCount]               = useState(0)
+  const [searchFocus, setSearchFocus] = useState(false)
 
   return (
-    <header className="bg-white shadow-sm sticky top-0 z-50">
-      {/* Top bar */}
-      <div className="bg-red-700 text-white text-sm py-1.5 px-4 text-center">
-        <span>📞 للطوارئ والطلبات العاجلة: </span>
-        <a href="tel:+249123456789" className="font-bold hover:underline">+249 123 456 789</a>
-        <span className="mx-3">|</span>
-        <span>🚚 توصيل سريع لكل السودان</span>
-      </div>
+    <header style={{
+      background: 'rgba(5,5,5,0.97)',
+      backdropFilter: 'blur(20px)',
+      borderBottom: `1px solid rgba(210,16,52,0.25)`,
+      position: 'sticky', top: 0, zIndex: 50,
+      fontFamily: "'Cairo', sans-serif",
+    }}>
+      <div style={{ maxWidth: 1280, margin: '0 auto', padding: '12px 16px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
 
-      <div className="max-w-7xl mx-auto px-4 py-3">
-        <div className="flex items-center justify-between gap-4">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 flex-shrink-0">
-            <div className="w-10 h-10 bg-red-600 rounded-xl flex items-center justify-center">
-              <span className="text-white font-black text-lg">S</span>
+          <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none', flexShrink: 0 }}>
+            <div style={{
+              width: 42, height: 42,
+              background: `linear-gradient(135deg, ${C.redDark}, ${C.black}, ${C.greenDark})`,
+              borderRadius: 12,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              boxShadow: `0 0 16px rgba(210,16,52,0.4)`,
+            }}>
+              <span style={{ color: '#fff', fontWeight: 900, fontSize: 18 }}>S</span>
             </div>
             <div>
-              <div className="font-black text-xl text-red-700 leading-none">SudanMed</div>
-              <div className="text-xs text-gray-500 leading-none">المستلزمات الطبية</div>
+              <div style={{
+                fontWeight: 900, fontSize: 20, lineHeight: 1,
+                background: `linear-gradient(90deg, ${C.red}, #fff, ${C.green})`,
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text',
+              }}>SudanMed</div>
+              <div style={{ fontSize: 11, color: 'rgba(240,237,232,0.4)', lineHeight: 1, marginTop: 2 }}>
+                المستلزمات الطبية
+              </div>
             </div>
           </Link>
 
           {/* Search */}
-          <div className="flex-1 max-w-xl hidden md:block">
-            <div className="relative">
-              <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+          <div style={{ flex: 1, maxWidth: 480, display: 'none' }} className="md-search">
+            <div style={{ position: 'relative' }}>
+              <Search style={{
+                position: 'absolute', right: 12, top: '50%',
+                transform: 'translateY(-50%)',
+                width: 18, height: 18,
+                color: searchFocus ? C.red : 'rgba(240,237,232,0.35)',
+                transition: 'color .2s',
+              }} />
               <input
                 type="text"
                 placeholder="ابحث عن منتج طبي..."
-                className="w-full border border-gray-200 rounded-xl py-2.5 pr-10 pl-4 text-sm focus:outline-none focus:border-red-400 focus:ring-1 focus:ring-red-200"
+                onFocus={() => setSearchFocus(true)}
+                onBlur={() => setSearchFocus(false)}
+                style={{
+                  width: '100%',
+                  background: '#111',
+                  border: `1px solid ${searchFocus ? C.red : 'rgba(210,16,52,0.2)'}`,
+                  borderRadius: 10,
+                  padding: '10px 40px 10px 14px',
+                  fontSize: 14,
+                  color: 'rgba(240,237,232,0.9)',
+                  outline: 'none',
+                  boxShadow: searchFocus ? `0 0 0 3px rgba(210,16,52,0.1)` : 'none',
+                  transition: 'all .2s',
+                  direction: 'rtl',
+                  fontFamily: "'Cairo', sans-serif",
+                }}
               />
             </div>
           </div>
 
           {/* Actions */}
-          <div className="flex items-center gap-2">
-            <Link href="/cart" className="relative p-2 hover:bg-red-50 rounded-xl transition-colors">
-              <ShoppingCart className="w-6 h-6 text-gray-700" />
-              {cartCount > 0 && (
-                <span className="absolute -top-1 -left-1 bg-red-600 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
-                  {cartCount}
-                </span>
-              )}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+
+            {/* Cart */}
+            <Link href="/cart" style={{ position: 'relative', textDecoration: 'none' }}>
+              <div style={{
+                padding: 9, borderRadius: 10,
+                background: 'rgba(255,255,255,0.04)',
+                border: '1px solid rgba(210,16,52,0.15)',
+                cursor: 'pointer', transition: 'all .2s',
+              }}>
+                <ShoppingCart style={{ width: 22, height: 22, color: 'rgba(240,237,232,0.8)' }} />
+                {cartCount > 0 && (
+                  <span style={{
+                    position: 'absolute', top: -4, left: -4,
+                    background: C.red, color: '#fff',
+                    fontSize: 10, fontWeight: 700,
+                    width: 18, height: 18, borderRadius: '50%',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    boxShadow: `0 0 8px rgba(210,16,52,0.6)`,
+                  }}>{cartCount}</span>
+                )}
+              </div>
             </Link>
-            <Link href="/orders" className="p-2 hover:bg-red-50 rounded-xl transition-colors hidden sm:block">
-              <Package className="w-6 h-6 text-gray-700" />
+
+            {/* Orders */}
+            <Link href="/orders" style={{ textDecoration: 'none' }}>
+              <div style={{
+                padding: 9, borderRadius: 10,
+                background: 'rgba(255,255,255,0.04)',
+                border: '1px solid rgba(0,114,41,0.15)',
+                cursor: 'pointer',
+              }}>
+                <Package style={{ width: 22, height: 22, color: 'rgba(240,237,232,0.8)' }} />
+              </div>
             </Link>
-            <Link
-              href="/auth/login"
-              className="bg-red-600 text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-red-700 transition-colors hidden sm:block"
-            >
-              دخول
+
+            {/* Login */}
+            <Link href="/auth/login" style={{ textDecoration: 'none' }}>
+              <button style={{
+                background: `linear-gradient(90deg, ${C.redDark}, ${C.black}, ${C.greenDark})`,
+                color: '#fff', border: 'none',
+                padding: '9px 20px', borderRadius: 10,
+                fontSize: 13, fontWeight: 700, cursor: 'pointer',
+                boxShadow: `0 2px 12px rgba(210,16,52,0.3)`,
+                transition: 'all .2s',
+                fontFamily: "'Cairo', sans-serif",
+              }}>
+                دخول
+              </button>
             </Link>
+
+            {/* Mobile toggle */}
             <button
-              className="p-2 hover:bg-gray-100 rounded-xl md:hidden"
               onClick={() => setMenuOpen(!menuOpen)}
+              style={{
+                padding: 9, borderRadius: 10,
+                background: 'rgba(255,255,255,0.04)',
+                border: '1px solid rgba(255,255,255,0.08)',
+                cursor: 'pointer', color: 'rgba(240,237,232,0.8)',
+              }}
+              className="md-hide"
             >
-              {menuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              {menuOpen ? <X size={20} /> : <Menu size={20} />}
             </button>
           </div>
         </div>
 
-        {/* Nav */}
-        <nav className="hidden md:flex items-center gap-6 mt-3 pt-3 border-t border-gray-100 text-sm font-semibold">
+        {/* Desktop Nav */}
+        <nav style={{
+          display: 'flex', alignItems: 'center', gap: 24,
+          marginTop: 12, paddingTop: 12,
+          borderTop: '1px solid rgba(210,16,52,0.12)',
+          flexWrap: 'wrap',
+        }} className="desktop-nav">
           {[
-            { href: '/products', label: 'جميع المنتجات' },
-            { href: '/products?cat=ppe', label: 'وسائل الوقاية' },
-            { href: '/products?cat=surgical', label: 'مستلزمات جراحية' },
-            { href: '/products?cat=lab', label: 'مستلزمات مختبرات' },
-            { href: '/products?cat=injection', label: 'حقن وتسريب' },
-            { href: '/track', label: '📦 تتبع طلبك' },
+            { href: '/products',           label: 'جميع المنتجات' },
+            { href: '/products?cat=ppe',        label: '🧤 وسائل الوقاية' },
+            { href: '/products?cat=surgical',   label: '✂️ مستلزمات جراحية' },
+            { href: '/products?cat=lab',        label: '🔬 مستلزمات مختبرات' },
+            { href: '/products?cat=injection',  label: '💉 حقن وتسريب' },
+            { href: '/track',                   label: '📦 تتبع طلبك' },
           ].map(item => (
-            <Link key={item.href} href={item.href} className="text-gray-600 hover:text-red-600 transition-colors">
+            <Link key={item.href} href={item.href} style={{
+              color: 'rgba(240,237,232,0.6)',
+              fontSize: 13, fontWeight: 600,
+              textDecoration: 'none',
+              transition: 'color .2s',
+              padding: '2px 0',
+            }}
+            onMouseEnter={e => (e.currentTarget.style.color = C.red)}
+            onMouseLeave={e => (e.currentTarget.style.color = 'rgba(240,237,232,0.6)')}
+            >
               {item.label}
             </Link>
           ))}
         </nav>
 
-        {/* Mobile menu */}
+        {/* Mobile Menu */}
         {menuOpen && (
-          <div className="md:hidden mt-3 pt-3 border-t border-gray-100 flex flex-col gap-2">
+          <div style={{
+            marginTop: 12, paddingTop: 12,
+            borderTop: '1px solid rgba(210,16,52,0.15)',
+            display: 'flex', flexDirection: 'column', gap: 6,
+          }}>
             <input
               type="text"
               placeholder="ابحث..."
-              className="w-full border border-gray-200 rounded-xl py-2 px-4 text-sm"
+              style={{
+                background: '#111',
+                border: `1px solid rgba(210,16,52,0.2)`,
+                borderRadius: 10, padding: '10px 14px',
+                fontSize: 14, color: 'rgba(240,237,232,0.9)',
+                outline: 'none', direction: 'rtl',
+                fontFamily: "'Cairo', sans-serif",
+              }}
             />
             {[
-              { href: '/products', label: 'جميع المنتجات' },
-              { href: '/cart', label: 'السلة' },
-              { href: '/orders', label: 'طلباتي' },
-              { href: '/track', label: 'تتبع طلب' },
-              { href: '/auth/login', label: 'تسجيل الدخول' },
+              { href: '/products',    label: 'جميع المنتجات' },
+              { href: '/cart',        label: '🛒 السلة' },
+              { href: '/orders',      label: '📋 طلباتي' },
+              { href: '/track',       label: '📦 تتبع طلب' },
+              { href: '/auth/login',  label: '🔐 تسجيل الدخول' },
             ].map(item => (
-              <Link key={item.href} href={item.href} className="py-2 px-3 text-gray-700 hover:bg-red-50 rounded-lg font-medium">
+              <Link key={item.href} href={item.href} style={{
+                padding: '10px 14px',
+                color: 'rgba(240,237,232,0.8)',
+                fontWeight: 600, fontSize: 14,
+                textDecoration: 'none',
+                borderRadius: 8,
+                transition: 'background .2s',
+              }}
+              onMouseEnter={e => (e.currentTarget.style.background = 'rgba(210,16,52,0.1)')}
+              onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+              >
                 {item.label}
               </Link>
             ))}
           </div>
         )}
       </div>
+
+      <style>{`
+        @media (min-width: 768px) {
+          .md-search { display: block !important; }
+          .md-hide   { display: none !important; }
+        }
+        @media (max-width: 767px) {
+          .desktop-nav { display: none !important; }
+        }
+      `}</style>
     </header>
   )
 }
