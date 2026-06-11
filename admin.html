@@ -1,0 +1,1063 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>SudanMed — لوحة الإدارة</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --red:#dc2626;--red-dk:#b91c1c;--red-lt:#fee2e2;
+  --teal:#0d9488;--teal-lt:#ccfbf1;
+  --gray-50:#f9fafb;--gray-100:#f3f4f6;--gray-200:#e5e7eb;
+  --gray-400:#9ca3af;--gray-500:#6b7280;--gray-700:#374151;--gray-900:#111827;
+  --white:#fff;--radius:0.75rem;
+  --shadow:0 1px 3px rgba(0,0,0,.1);
+  --sidebar-w:16rem;
+}
+html{scroll-behavior:smooth}
+body{font-family:'Noto Sans Arabic',sans-serif;background:var(--gray-50);color:var(--gray-900);min-height:100vh;display:flex}
+a{color:inherit;text-decoration:none}button{cursor:pointer;border:none;background:none;font-family:inherit}
+input,select,textarea{font-family:inherit}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;padding:.5rem 1rem;border-radius:.75rem;font-weight:600;font-size:.875rem;transition:all .15s;cursor:pointer;border:none}
+.btn-primary{background:var(--red);color:#fff}.btn-primary:hover{background:var(--red-dk)}
+.btn-teal{background:var(--teal);color:#fff}.btn-teal:hover{background:#0f766e}
+.btn-outline{background:transparent;border:1.5px solid var(--gray-200);color:var(--gray-700)}.btn-outline:hover{background:var(--gray-50)}
+.btn-sm{padding:.375rem .75rem;font-size:.75rem}
+.btn-danger{background:#fee2e2;color:var(--red-dk)}.btn-danger:hover{background:#fecaca}
+.badge{display:inline-flex;align-items:center;padding:.2rem .6rem;border-radius:9999px;font-size:.7rem;font-weight:600}
+.badge-green{background:#d1fae5;color:#065f46}.badge-red{background:#fee2e2;color:#991b1b}
+.badge-yellow{background:#fef3c7;color:#92400e}.badge-gray{background:var(--gray-100);color:var(--gray-500)}
+.badge-blue{background:#dbeafe;color:#1e40af}
+.input{width:100%;padding:.625rem .875rem;border:1.5px solid var(--gray-200);border-radius:.625rem;font-size:.875rem;color:var(--gray-900);background:var(--white);transition:border-color .15s}
+.input:focus{outline:none;border-color:var(--red);box-shadow:0 0 0 3px rgba(220,38,38,.1)}
+.label{display:block;font-size:.8rem;font-weight:500;color:var(--gray-700);margin-bottom:.3rem}
+
+/* Sidebar */
+.sidebar{width:var(--sidebar-w);background:var(--gray-900);color:#fff;position:fixed;top:0;bottom:0;right:0;display:flex;flex-direction:column;z-index:30;overflow-y:auto}
+.sidebar-logo{padding:1.25rem 1rem;border-bottom:1px solid rgba(255,255,255,.1);display:flex;align-items:center;gap:.75rem}
+.sidebar-logo-icon{width:2rem;height:2rem;background:var(--red);border-radius:.5rem;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.875rem;flex-shrink:0}
+.sidebar-logo-text{font-weight:700;font-size:.9rem;color:#fff}
+.sidebar-logo-sub{font-size:.65rem;color:rgba(255,255,255,.5)}
+.sidebar-nav{padding:.75rem 0;flex:1}
+.nav-section{padding:.5rem 1rem .25rem;font-size:.65rem;font-weight:600;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.08em}
+.nav-item{display:flex;align-items:center;gap:.75rem;padding:.6rem 1rem;font-size:.8rem;color:rgba(255,255,255,.7);cursor:pointer;transition:all .15s;border-inline-start:2px solid transparent}
+.nav-item:hover{background:rgba(255,255,255,.07);color:#fff}
+.nav-item.active{background:rgba(220,38,38,.15);color:#fff;border-inline-start-color:var(--red)}
+.nav-item span{flex:1}
+.sidebar-footer{padding:1rem;border-top:1px solid rgba(255,255,255,.1)}
+.sidebar-user{display:flex;align-items:center;gap:.625rem;font-size:.8rem}
+.sidebar-avatar{width:1.875rem;height:1.875rem;background:var(--red);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.75rem;flex-shrink:0}
+
+/* Main content */
+.main{margin-inline-end:var(--sidebar-w);flex:1;min-height:100vh;display:flex;flex-direction:column}
+.topbar{background:#fff;border-bottom:1px solid var(--gray-200);padding:.875rem 1.5rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:20}
+.topbar-title{font-size:1rem;font-weight:700}
+.topbar-actions{display:flex;align-items:center;gap:.75rem}
+.content{padding:1.5rem;flex:1}
+
+/* Cards */
+.card{background:#fff;border-radius:var(--radius);border:1px solid var(--gray-200);box-shadow:var(--shadow)}
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.5rem}
+.stat-card{background:#fff;border-radius:var(--radius);border:1px solid var(--gray-200);padding:1.25rem;box-shadow:var(--shadow)}
+.stat-icon{width:2.5rem;height:2.5rem;border-radius:.75rem;display:flex;align-items:center;justify-content:center;font-size:1.25rem;margin-bottom:.875rem}
+.stat-value{font-size:1.75rem;font-weight:800;margin-bottom:.25rem}
+.stat-label{font-size:.8rem;color:var(--gray-500)}
+.stat-change{font-size:.75rem;margin-top:.375rem}
+.stat-change.up{color:#059669}.stat-change.down{color:var(--red)}
+
+/* Table */
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.8rem}
+th{padding:.75rem 1rem;text-align:right;font-weight:600;color:var(--gray-500);background:var(--gray-50);border-bottom:1px solid var(--gray-200);white-space:nowrap}
+td{padding:.875rem 1rem;border-bottom:1px solid var(--gray-100);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#fafafa}
+.product-thumb{width:2.5rem;height:2.5rem;border-radius:.5rem;object-fit:cover;background:var(--gray-100)}
+.product-thumb-ph{width:2.5rem;height:2.5rem;border-radius:.5rem;background:var(--gray-100);display:flex;align-items:center;justify-content:center;font-size:1.1rem}
+
+/* View toggle */
+.view-toggle{display:none}.view-toggle.active{display:block}
+
+/* Modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:50;display:flex;align-items:center;justify-content:center;padding:1rem}
+.modal-box{background:#fff;border-radius:1rem;padding:1.5rem;max-width:36rem;width:100%;max-height:90vh;overflow-y:auto}
+.modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem}
+.modal-title{font-size:1.1rem;font-weight:700}
+.modal-close{color:var(--gray-400);font-size:1.25rem;cursor:pointer;background:none;border:none;padding:.25rem}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.form-row{display:flex;flex-direction:column;gap:.3rem}
+
+/* Login */
+.login-page{display:flex;align-items:center;justify-content:center;min-height:100vh;background:var(--gray-900);width:100vw;flex-direction:column;gap:1rem}
+.login-box{background:#fff;border-radius:1rem;padding:2rem;width:100%;max-width:22rem;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+.login-logo{text-align:center;margin-bottom:1.5rem}
+.login-logo-icon{width:3rem;height:3rem;background:var(--red);border-radius:.75rem;margin:0 auto .75rem;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:1.25rem}
+
+/* Charts placeholder */
+.chart-ph{background:var(--gray-50);border:2px dashed var(--gray-200);border-radius:.75rem;height:12rem;display:flex;align-items:center;justify-content:center;color:var(--gray-400);font-size:.875rem}
+
+/* Notification badge */
+.notif-dot{width:.5rem;height:.5rem;background:var(--red);border-radius:50%;display:inline-block;margin-inline-start:.375rem}
+
+/* Toast */
+.toast-container{position:fixed;bottom:1.5rem;left:1.5rem;z-index:99;display:flex;flex-direction:column;gap:.5rem}
+.toast{background:var(--gray-900);color:#fff;padding:.75rem 1.125rem;border-radius:.75rem;font-size:.825rem;box-shadow:0 4px 12px rgba(0,0,0,.15);animation:fadeIn .3s ease;display:flex;align-items:center;gap:.5rem}
+.toast.success{background:#065f46}.toast.error{background:#991b1b}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+/* Spinner */
+.spinner{width:1rem;height:1rem;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;display:inline-block}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Status steps */
+.status-step{display:flex;align-items:center;gap:.75rem;padding:.75rem 0;border-bottom:1px solid var(--gray-100)}
+.status-step:last-child{border-bottom:none}
+.status-dot{width:2rem;height:2rem;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;flex-shrink:0}
+
+/* Payment review */
+.receipt-img{width:100%;max-height:20rem;object-fit:contain;border-radius:.75rem;border:1px solid var(--gray-200)}
+
+/* Charts bars */
+.bar-chart{display:flex;align-items:flex-end;gap:.5rem;height:10rem;padding-bottom:.5rem}
+.bar{flex:1;background:var(--red);border-radius:.25rem .25rem 0 0;transition:height .4s}
+.bar:nth-child(2n){background:#fca5a5}
+.bar-label{font-size:.65rem;color:var(--gray-400);text-align:center;margin-top:.25rem}
+</style>
+</head>
+<body>
+
+<!-- LOGIN PAGE -->
+<div id="loginPage" class="login-page">
+  <div class="login-box">
+    <div class="login-logo">
+      <div class="login-logo-icon">S</div>
+      <h1 style="font-size:1.25rem;font-weight:700">لوحة إدارة SudanMed</h1>
+      <p style="font-size:.8rem;color:var(--gray-500);margin-top:.25rem">للمسؤولين فقط</p>
+    </div>
+    <div id="loginErr" style="display:none;background:#fee2e2;color:#991b1b;border-radius:.625rem;padding:.75rem;font-size:.8rem;margin-bottom:1rem"></div>
+    <div style="display:flex;flex-direction:column;gap:.875rem">
+      <div><label class="label">البريد الإلكتروني</label>
+        <input class="input" id="adminEmail" type="email" placeholder="admin@sudanmed.com" value="admin@sudanmed.com"/></div>
+      <div><label class="label">كلمة المرور</label>
+        <input class="input" id="adminPwd" type="password" placeholder="••••••••" value="admin123" onkeydown="if(event.key==='Enter')doAdminLogin()"/></div>
+      <button class="btn btn-primary" style="width:100%;padding:.75rem;margin-top:.25rem" onclick="doAdminLogin()" id="loginBtn">دخول ←</button>
+    </div>
+    <p style="font-size:.75rem;color:var(--gray-400);text-align:center;margin-top:1rem">
+      للتجربة: admin@sudanmed.com / admin123
+    </p>
+  </div>
+</div>
+
+<!-- ADMIN PANEL -->
+<div id="adminPanel" style="display:none;width:100%;display:none;flex:1">
+
+  <!-- Sidebar -->
+  <nav class="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-icon">S</div>
+      <div>
+        <div class="sidebar-logo-text">SudanMed</div>
+        <div class="sidebar-logo-sub">لوحة الإدارة</div>
+      </div>
+    </div>
+    <div class="sidebar-nav">
+      <div class="nav-section">الرئيسية</div>
+      <div class="nav-item active" onclick="showView('dashboard')"><span>📊</span><span>لوحة التحكم</span></div>
+
+      <div class="nav-section">المتجر</div>
+      <div class="nav-item" onclick="showView('orders')"><span>📦</span><span>الطلبات</span><span id="pendingOrdersBadge" class="badge badge-red" style="font-size:.6rem;padding:.1rem .4rem;display:none"></span></div>
+      <div class="nav-item" onclick="showView('products')"><span>🏥</span><span>المنتجات</span></div>
+      <div class="nav-item" onclick="showView('categories')"><span>🗂️</span><span>الفئات</span></div>
+      <div class="nav-item" onclick="showView('inventory')"><span>📋</span><span>المخزون</span></div>
+
+      <div class="nav-section">المالية</div>
+      <div class="nav-item" onclick="showView('payments')"><span>💳</span><span>المدفوعات</span><span id="pendingPayBadge" class="badge badge-yellow" style="font-size:.6rem;padding:.1rem .4rem;display:none"></span></div>
+      <div class="nav-item" onclick="showView('reports')"><span>📈</span><span>التقارير</span></div>
+
+      <div class="nav-section">العملاء</div>
+      <div class="nav-item" onclick="showView('customers')"><span>👥</span><span>العملاء</span></div>
+      <div class="nav-item" onclick="showView('support')"><span>🎧</span><span>الدعم</span></div>
+    </div>
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="sidebar-avatar">A</div>
+        <div>
+          <div style="font-size:.8rem;font-weight:600">مدير النظام</div>
+          <div style="font-size:.65rem;color:rgba(255,255,255,.4)">admin@sudanmed.com</div>
+        </div>
+        <button onclick="doLogout()" style="margin-inline-start:auto;color:rgba(255,255,255,.4);font-size:.75rem;background:none;border:none;cursor:pointer">خروج</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main -->
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-title" id="viewTitle">لوحة التحكم</div>
+      <div class="topbar-actions">
+        <span style="font-size:.8rem;color:var(--gray-400)" id="clockEl"></span>
+        <a href="/" target="_blank" class="btn btn-outline btn-sm">🌐 الموقع</a>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- DASHBOARD -->
+      <div class="view-toggle active" id="view-dashboard">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon" style="background:#fee2e2">📦</div>
+            <div class="stat-value" id="st-orders">0</div>
+            <div class="stat-label">إجمالي الطلبات</div>
+            <div class="stat-change up" id="st-orders-new">0 طلب جديد اليوم</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon" style="background:#d1fae5">💰</div>
+            <div class="stat-value" id="st-revenue">0</div>
+            <div class="stat-label">الإيرادات (ج.س)</div>
+            <div class="stat-change up">↑ هذا الشهر</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon" style="background:#dbeafe">👥</div>
+            <div class="stat-value" id="st-customers">0</div>
+            <div class="stat-label">العملاء المسجلين</div>
+            <div class="stat-change up">↑ 12% هذا الأسبوع</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon" style="background:#fef3c7">🏥</div>
+            <div class="stat-value" id="st-products">12</div>
+            <div class="stat-label">المنتجات النشطة</div>
+            <div class="stat-change" style="color:var(--gray-400)">2 منخفض المخزون</div>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:2fr 1fr;gap:1.5rem;margin-bottom:1.5rem">
+          <div class="card" style="padding:1.25rem">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+              <h3 style="font-weight:600;font-size:.9rem">المبيعات الأسبوعية</h3>
+              <span style="font-size:.75rem;color:var(--gray-400)">آخر 7 أيام</span>
+            </div>
+            <div class="bar-chart" id="weekChart"></div>
+            <div style="display:flex;justify-content:space-around;margin-top:.25rem" id="weekLabels"></div>
+          </div>
+          <div class="card" style="padding:1.25rem">
+            <h3 style="font-weight:600;font-size:.9rem;margin-bottom:1rem">حالة الطلبات</h3>
+            <div id="orderStatusChart" style="display:flex;flex-direction:column;gap:.625rem"></div>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem">
+          <div class="card" style="padding:1.25rem">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+              <h3 style="font-weight:600;font-size:.9rem">أحدث الطلبات</h3>
+              <button onclick="showView('orders')" class="btn btn-outline btn-sm">عرض الكل</button>
+            </div>
+            <div id="recentOrdersList"></div>
+          </div>
+          <div class="card" style="padding:1.25rem">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+              <h3 style="font-weight:600;font-size:.9rem">مدفوعات تنتظر التحقق</h3>
+              <button onclick="showView('payments')" class="btn btn-outline btn-sm">عرض الكل</button>
+            </div>
+            <div id="pendingPayList"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ORDERS -->
+      <div class="view-toggle" id="view-orders">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem">
+          <h2 style="font-size:1rem;font-weight:700">إدارة الطلبات</h2>
+          <div style="display:flex;gap:.75rem;align-items:center">
+            <input class="input" style="width:14rem;padding:.5rem .75rem;font-size:.8rem" placeholder="🔍 بحث برقم الطلب..." id="orderSearch" oninput="filterOrders()"/>
+            <select class="input" style="width:auto;padding:.5rem .75rem;font-size:.8rem" id="orderStatusFilter" onchange="filterOrders()">
+              <option value="">كل الحالات</option>
+              <option value="PENDING">قيد الانتظار</option>
+              <option value="CONFIRMED">مؤكد</option>
+              <option value="PROCESSING">جاري التحضير</option>
+              <option value="SHIPPED">مشحون</option>
+              <option value="DELIVERED">تم التوصيل</option>
+              <option value="CANCELLED">ملغي</option>
+            </select>
+          </div>
+        </div>
+        <div class="card">
+          <div class="table-wrap">
+            <table id="ordersTable">
+              <thead>
+                <tr>
+                  <th>رقم الطلب</th><th>العميل</th><th>المبلغ</th>
+                  <th>طريقة الدفع</th><th>الحالة</th><th>التاريخ</th><th>إجراء</th>
+                </tr>
+              </thead>
+              <tbody id="ordersTbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- PRODUCTS -->
+      <div class="view-toggle" id="view-products">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem">
+          <h2 style="font-size:1rem;font-weight:700">إدارة المنتجات</h2>
+          <button class="btn btn-primary btn-sm" onclick="showProductModal()">+ إضافة منتج</button>
+        </div>
+        <div class="card">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>المنتج</th><th>SKU</th><th>الفئة</th><th>السعر</th>
+                  <th>المخزون</th><th>الحالة</th><th>إجراء</th>
+                </tr>
+              </thead>
+              <tbody id="productsTbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- CATEGORIES -->
+      <div class="view-toggle" id="view-categories">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem">
+          <h2 style="font-size:1rem;font-weight:700">إدارة الفئات</h2>
+          <button class="btn btn-primary btn-sm" onclick="showCatModal()">+ إضافة فئة</button>
+        </div>
+        <div class="card">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>الأيقونة</th><th>الاسم بالعربية</th><th>الاسم بالإنجليزية</th><th>الرابط</th><th>المنتجات</th><th>الحالة</th><th>إجراء</th></tr>
+              </thead>
+              <tbody id="catsTbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- INVENTORY -->
+      <div class="view-toggle" id="view-inventory">
+        <div style="margin-bottom:1.25rem">
+          <h2 style="font-size:1rem;font-weight:700;margin-bottom:.5rem">إدارة المخزون</h2>
+          <div style="display:flex;gap:.75rem">
+            <div class="card" style="padding:.875rem 1.25rem;flex:1;border-right:3px solid var(--red)">
+              <div style="font-size:.75rem;color:var(--gray-500)">منخفض المخزون</div>
+              <div style="font-size:1.5rem;font-weight:700;color:var(--red)" id="lowStockCount">0</div>
+            </div>
+            <div class="card" style="padding:.875rem 1.25rem;flex:1;border-right:3px solid #f59e0b">
+              <div style="font-size:.75rem;color:var(--gray-500)">ينتهي قريباً</div>
+              <div style="font-size:1.5rem;font-weight:700;color:#f59e0b">0</div>
+            </div>
+            <div class="card" style="padding:.875rem 1.25rem;flex:1;border-right:3px solid #059669">
+              <div style="font-size:.75rem;color:var(--gray-500)">إجمالي الوحدات</div>
+              <div style="font-size:1.5rem;font-weight:700;color:#059669" id="totalUnits">0</div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>المنتج</th><th>SKU</th><th>المخزون الحالي</th><th>الحد الأدنى</th><th>الحالة</th><th>تحديث</th></tr>
+              </thead>
+              <tbody id="inventoryTbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- PAYMENTS -->
+      <div class="view-toggle" id="view-payments">
+        <div style="margin-bottom:1.25rem">
+          <h2 style="font-size:1rem;font-weight:700;margin-bottom:.75rem">إدارة المدفوعات</h2>
+          <div style="display:flex;gap:.75rem;margin-bottom:1rem">
+            <div class="card" style="padding:.875rem 1.25rem;flex:1;background:#fef3c7;border:none">
+              <div style="font-size:.75rem;color:#92400e">تنتظر التحقق</div>
+              <div style="font-size:1.5rem;font-weight:700;color:#92400e" id="pendingPayCount">0</div>
+            </div>
+            <div class="card" style="padding:.875rem 1.25rem;flex:1;background:#d1fae5;border:none">
+              <div style="font-size:.75rem;color:#065f46">تم التحقق</div>
+              <div style="font-size:1.5rem;font-weight:700;color:#065f46" id="verifiedPayCount">0</div>
+            </div>
+            <div class="card" style="padding:.875rem 1.25rem;flex:1;background:#dbeafe;border:none">
+              <div style="font-size:.75rem;color:#1e40af">إجمالي اليوم</div>
+              <div style="font-size:1.5rem;font-weight:700;color:#1e40af" id="todayRevenue">0 ج.س</div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>رقم الطلب</th><th>الطريقة</th><th>المبلغ</th><th>الإيصال</th><th>الحالة</th><th>التاريخ</th><th>إجراء</th></tr>
+              </thead>
+              <tbody id="paymentsTbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- REPORTS -->
+      <div class="view-toggle" id="view-reports">
+        <h2 style="font-size:1rem;font-weight:700;margin-bottom:1.25rem">التقارير والإحصائيات</h2>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem">
+          <div class="card" style="padding:1.25rem">
+            <h3 style="font-size:.9rem;font-weight:600;margin-bottom:1rem">المنتجات الأكثر مبيعاً</h3>
+            <div id="topProductsReport"></div>
+          </div>
+          <div class="card" style="padding:1.25rem">
+            <h3 style="font-size:.9rem;font-weight:600;margin-bottom:1rem">توزيع طرق الدفع</h3>
+            <div id="paymentMethodsReport"></div>
+          </div>
+          <div class="card" style="padding:1.25rem;grid-column:1/-1">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+              <h3 style="font-size:.9rem;font-weight:600">ملخص شهري</h3>
+              <button class="btn btn-outline btn-sm" onclick="exportCSV()">📥 تصدير CSV</button>
+            </div>
+            <div id="monthlySummary"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CUSTOMERS -->
+      <div class="view-toggle" id="view-customers">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem">
+          <h2 style="font-size:1rem;font-weight:700">إدارة العملاء</h2>
+          <input class="input" style="width:16rem;padding:.5rem .75rem;font-size:.8rem" placeholder="🔍 بحث بالاسم أو الإيميل..." id="customerSearch" oninput="filterCustomers()"/>
+        </div>
+        <div class="card">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>العميل</th><th>البريد الإلكتروني</th><th>الهاتف</th><th>الطلبات</th><th>الإنفاق</th><th>الانضمام</th></tr>
+              </thead>
+              <tbody id="customersTbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- SUPPORT -->
+      <div class="view-toggle" id="view-support">
+        <h2 style="font-size:1rem;font-weight:700;margin-bottom:1.25rem">تذاكر الدعم</h2>
+        <div class="card">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>رقم التذكرة</th><th>الموضوع</th><th>العميل</th><th>الفئة</th><th>الأولوية</th><th>الحالة</th><th>إجراء</th></tr>
+              </thead>
+              <tbody id="supportTbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /main -->
+</div><!-- /adminPanel -->
+
+<!-- Toast container -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+// CONFIG
+// ═══════════════════════════════════════════════════════════════
+const SB_URL = 'https://digfrefpowwigahzogko.supabase.co/rest/v1';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRpZ2ZyZWZwb3d3aWdhaHpvZ2tvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk5ODkwNjMsImV4cCI6MjA5NTU2NTA2M30.Pal6_vz03Uzz3pgM71FH0xoiEwbeN8VIOC-xDc3um6E';
+const ADMIN_EMAIL = 'admin@sudanmed.com';
+const ADMIN_PASS  = 'admin123';
+
+// ═══════════════════════════════════════════════════════════════
+// FALLBACK DATA
+// ═══════════════════════════════════════════════════════════════
+const DEMO_ORDERS = [
+  {id:'ord-1',order_number:'SM-A1B2C3',user_name:'أحمد محمد',total:450,payment_method:'BANKAK',status:'PENDING',payment_status:'PENDING',created_at:'2024-06-10T10:30:00Z',receipt_url:null,items_count:3},
+  {id:'ord-2',order_number:'SM-D4E5F6',user_name:'فاطمة عبدالله',total:1250,payment_method:'STRIPE',status:'CONFIRMED',payment_status:'PAID',created_at:'2024-06-10T09:15:00Z',receipt_url:null,items_count:5},
+  {id:'ord-3',order_number:'SM-G7H8I9',user_name:'خالد إبراهيم',total:320,payment_method:'BANKAK',status:'PROCESSING',payment_status:'PAID',created_at:'2024-06-09T14:20:00Z',receipt_url:'https://example.com/receipt1.jpg',items_count:2},
+  {id:'ord-4',order_number:'SM-J1K2L3',user_name:'سارة علي',total:780,payment_method:'CASH_ON_DELIVERY',status:'SHIPPED',payment_status:'PENDING',created_at:'2024-06-09T11:00:00Z',receipt_url:null,items_count:4},
+  {id:'ord-5',order_number:'SM-M4N5O6',user_name:'عمر حسن',total:95,payment_method:'BANKAK',status:'DELIVERED',payment_status:'PAID',created_at:'2024-06-08T08:45:00Z',receipt_url:'https://example.com/receipt2.jpg',items_count:1},
+  {id:'ord-6',order_number:'SM-P7Q8R9',user_name:'نور الدين',total:2100,payment_method:'STRIPE',status:'PENDING',payment_status:'PENDING',created_at:'2024-06-11T07:00:00Z',receipt_url:null,items_count:8},
+];
+const DEMO_PRODUCTS = [
+  {id:'p-1',sku:'PPE-001',name_ar:'كمامة N95 طبية',name_en:'N95 Mask',price:150,compare_price:200,stock:500,status:'ACTIVE',category:{name_ar:'وقاية شخصية'},ce_marked:true,featured:true},
+  {id:'p-2',sku:'INJ-001',name_ar:'محقنة 5 مل',name_en:'Syringe 5ml',price:25,compare_price:null,stock:2000,status:'ACTIVE',category:{name_ar:'حقن وتسريب'},ce_marked:true,featured:true},
+  {id:'p-3',sku:'INJ-002',name_ar:'كانيولا 18G',name_en:'Cannula 18G',price:45,compare_price:60,stock:1000,status:'ACTIVE',category:{name_ar:'حقن وتسريب'},ce_marked:true,featured:false},
+  {id:'p-4',sku:'SRG-001',name_ar:'خيط جراحي 2-0',name_en:'Suture 2-0',price:280,compare_price:null,stock:300,status:'ACTIVE',category:{name_ar:'مستلزمات جراحية'},ce_marked:true,featured:false},
+  {id:'p-5',sku:'STR-001',name_ar:'بيتادين 500مل',name_en:'Betadine 500ml',price:120,compare_price:150,stock:8,status:'ACTIVE',category:{name_ar:'تعقيم'},ce_marked:false,featured:true},
+  {id:'p-6',sku:'STR-002',name_ar:'كحول 70% لتر',name_en:'Alcohol 70%',price:85,compare_price:null,stock:1500,status:'ACTIVE',category:{name_ar:'تعقيم'},ce_marked:false,featured:false},
+  {id:'p-7',sku:'LAB-001',name_ar:'أنبوب EDTA',name_en:'EDTA Tube',price:18,compare_price:25,stock:5000,status:'ACTIVE',category:{name_ar:'مختبرات'},ce_marked:true,featured:true},
+  {id:'p-8',sku:'WND-001',name_ar:'ضمادة لاصقة',name_en:'Bandage',price:35,compare_price:45,stock:5,status:'ACTIVE',category:{name_ar:'عناية جروح'},ce_marked:true,featured:false},
+  {id:'p-9',sku:'PPE-002',name_ar:'قفازات فينيل M',name_en:'Vinyl Gloves',price:95,compare_price:120,stock:200,status:'ACTIVE',category:{name_ar:'وقاية شخصية'},ce_marked:true,featured:false},
+  {id:'p-10',sku:'INJ-003',name_ar:'جهاز تسريب IV',name_en:'IV Infusion Set',price:30,compare_price:null,stock:2500,status:'ACTIVE',category:{name_ar:'حقن وتسريب'},ce_marked:true,featured:true},
+  {id:'p-11',sku:'SRG-002',name_ar:'شاش طبي',name_en:'Gauze',price:15,compare_price:20,stock:10000,status:'ACTIVE',category:{name_ar:'مستلزمات جراحية'},ce_marked:true,featured:false},
+  {id:'p-12',sku:'LAB-002',name_ar:'اختبار سريع كوفيد',name_en:'COVID Rapid Test',price:250,compare_price:350,stock:500,status:'ACTIVE',category:{name_ar:'مختبرات'},ce_marked:true,featured:true},
+];
+const DEMO_CATS = [
+  {id:'cat-1',name_ar:'وقاية شخصية',name_en:'PPE',slug:'ppe',icon:'🥼',is_active:true,products_count:2},
+  {id:'cat-2',name_ar:'حقن وتسريب',name_en:'Injection',slug:'injection-supplies',icon:'💉',is_active:true,products_count:3},
+  {id:'cat-3',name_ar:'مستلزمات جراحية',name_en:'Surgical',slug:'surgical',icon:'🔪',is_active:true,products_count:2},
+  {id:'cat-4',name_ar:'تعقيم',name_en:'Sterilization',slug:'sterilization',icon:'🧴',is_active:true,products_count:2},
+  {id:'cat-5',name_ar:'مختبرات',name_en:'Lab',slug:'lab-supplies',icon:'🧪',is_active:true,products_count:2},
+  {id:'cat-6',name_ar:'عناية جروح',name_en:'Wound Care',slug:'wound-care',icon:'🩹',is_active:true,products_count:1},
+];
+const DEMO_PAYMENTS = [
+  {id:'pay-1',order_number:'SM-A1B2C3',method:'BANKAK',amount:450,status:'PENDING',receipt_url:'https://via.placeholder.com/400x600?text=Receipt',created_at:'2024-06-10T10:30:00Z'},
+  {id:'pay-2',order_number:'SM-D4E5F6',method:'STRIPE',amount:1250,status:'PAID',receipt_url:null,created_at:'2024-06-10T09:15:00Z'},
+  {id:'pay-3',order_number:'SM-G7H8I9',method:'BANKAK',amount:320,status:'PAID',receipt_url:'https://via.placeholder.com/400x600?text=Receipt',created_at:'2024-06-09T14:20:00Z'},
+  {id:'pay-4',order_number:'SM-P7Q8R9',method:'BANKAK',amount:2100,status:'PENDING',receipt_url:'https://via.placeholder.com/400x600?text=Receipt2',created_at:'2024-06-11T07:00:00Z'},
+];
+const DEMO_CUSTOMERS = [
+  {id:'u-1',first_name:'أحمد',last_name:'محمد',email:'ahmed@example.com',phone:'+249912345678',orders_count:5,total_spent:2350,created_at:'2024-05-01T00:00:00Z'},
+  {id:'u-2',first_name:'فاطمة',last_name:'عبدالله',email:'fatima@example.com',phone:'+249923456789',orders_count:3,total_spent:1750,created_at:'2024-05-10T00:00:00Z'},
+  {id:'u-3',first_name:'خالد',last_name:'إبراهيم',email:'khalid@example.com',phone:'+249934567890',orders_count:8,total_spent:4200,created_at:'2024-04-20T00:00:00Z'},
+  {id:'u-4',first_name:'سارة',last_name:'علي',email:'sara@example.com',phone:'+249945678901',orders_count:2,total_spent:890,created_at:'2024-06-01T00:00:00Z'},
+];
+
+// ═══════════════════════════════════════════════════════════════
+// STATE & UTILS
+// ═══════════════════════════════════════════════════════════════
+const A = {
+  loggedIn: sessionStorage.getItem('sm_admin') === '1',
+  orders: JSON.parse(JSON.stringify(DEMO_ORDERS)),
+  products: JSON.parse(JSON.stringify(DEMO_PRODUCTS)),
+  cats: JSON.parse(JSON.stringify(DEMO_CATS)),
+  payments: JSON.parse(JSON.stringify(DEMO_PAYMENTS)),
+  customers: JSON.parse(JSON.stringify(DEMO_CUSTOMERS)),
+  currentView: 'dashboard',
+};
+
+const STATUS_AR = {PENDING:'قيد الانتظار',CONFIRMED:'مؤكد',PROCESSING:'جاري التحضير',READY_TO_SHIP:'جاهز للشحن',SHIPPED:'مشحون',OUT_FOR_DELIVERY:'في الطريق',DELIVERED:'تم التوصيل',CANCELLED:'ملغي'};
+const STATUS_CLASS = {PENDING:'badge-yellow',CONFIRMED:'badge-blue',PROCESSING:'badge-blue',SHIPPED:'badge-blue',DELIVERED:'badge-green',CANCELLED:'badge-red'};
+const PAY_AR = {BANKAK:'بنكك',STRIPE:'Stripe',PAYPAL:'PayPal',CASH_ON_DELIVERY:'الدفع عند الاستلام',BANK_TRANSFER:'تحويل بنكي',WALLET:'المحفظة'};
+
+function toast(msg, type='') {
+  const t = document.createElement('div');
+  t.className = `toast ${type}`;
+  t.innerHTML = (type==='success'?'✅ ':type==='error'?'❌ ':'ℹ️ ') + msg;
+  document.getElementById('toastContainer').appendChild(t);
+  setTimeout(() => t.remove(), 3500);
+}
+
+function fmtDate(d) { return new Date(d).toLocaleDateString('ar-SD'); }
+function fmtDateTime(d) { return new Date(d).toLocaleString('ar-SD'); }
+
+// ═══════════════════════════════════════════════════════════════
+// AUTH
+// ═══════════════════════════════════════════════════════════════
+function doAdminLogin() {
+  const email = document.getElementById('adminEmail').value.trim();
+  const pwd   = document.getElementById('adminPwd').value;
+  const err   = document.getElementById('loginErr');
+  const btn   = document.getElementById('loginBtn');
+  if (email !== ADMIN_EMAIL || pwd !== ADMIN_PASS) {
+    err.textContent = 'البريد الإلكتروني أو كلمة المرور غير صحيحة';
+    err.style.display = 'block'; return;
+  }
+  btn.innerHTML = '<span class="spinner"></span>'; btn.disabled = true;
+  setTimeout(() => {
+    sessionStorage.setItem('sm_admin', '1');
+    A.loggedIn = true;
+    document.getElementById('loginPage').style.display = 'none';
+    document.getElementById('adminPanel').style.display = 'flex';
+    initAdmin();
+  }, 600);
+}
+
+function doLogout() {
+  sessionStorage.removeItem('sm_admin');
+  location.reload();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════════════════════════
+function showView(name) {
+  document.querySelectorAll('.view-toggle').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('view-' + name)?.classList.add('active');
+  document.querySelector(`.nav-item[onclick="showView('${name}')"]`)?.classList.add('active');
+  const titles = {dashboard:'لوحة التحكم',orders:'إدارة الطلبات',products:'إدارة المنتجات',categories:'إدارة الفئات',inventory:'إدارة المخزون',payments:'إدارة المدفوعات',reports:'التقارير',customers:'العملاء',support:'تذاكر الدعم'};
+  document.getElementById('viewTitle').textContent = titles[name] || name;
+  A.currentView = name;
+  if (name==='orders')    renderOrders();
+  if (name==='products')  renderProducts();
+  if (name==='categories') renderCats();
+  if (name==='inventory') renderInventory();
+  if (name==='payments')  renderPayments();
+  if (name==='reports')   renderReports();
+  if (name==='customers') renderCustomers();
+  if (name==='support')   renderSupport();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// DASHBOARD
+// ═══════════════════════════════════════════════════════════════
+function initAdmin() {
+  // Stats
+  const totalOrders = A.orders.length;
+  const revenue = A.orders.filter(o=>o.payment_status==='PAID').reduce((s,o)=>s+o.total,0);
+  document.getElementById('st-orders').textContent = totalOrders;
+  document.getElementById('st-revenue').textContent = revenue.toLocaleString('ar');
+  document.getElementById('st-customers').textContent = A.customers.length;
+
+  const todayNew = A.orders.filter(o => new Date(o.created_at).toDateString() === new Date().toDateString()).length;
+  document.getElementById('st-orders-new').textContent = `${todayNew} طلب جديد اليوم`;
+
+  // Pending badges
+  const pendingOrders = A.orders.filter(o=>o.status==='PENDING').length;
+  const pendingPay = A.payments.filter(p=>p.status==='PENDING').length;
+  if (pendingOrders > 0) { const b=document.getElementById('pendingOrdersBadge'); b.textContent=pendingOrders; b.style.display='inline-flex'; }
+  if (pendingPay > 0)    { const b=document.getElementById('pendingPayBadge');    b.textContent=pendingPay;    b.style.display='inline-flex'; }
+  document.getElementById('pendingPayCount').textContent = pendingPay;
+  document.getElementById('verifiedPayCount').textContent = A.payments.filter(p=>p.status==='PAID').length;
+  document.getElementById('todayRevenue').textContent = A.payments.filter(p=>p.status==='PAID' && new Date(p.created_at).toDateString()===new Date().toDateString()).reduce((s,p)=>s+p.amount,0).toLocaleString('ar') + ' ج.س';
+
+  // Week chart
+  const days = ['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+  const vals  = [1200,2400,1800,3200,2800,1500,2100];
+  const max   = Math.max(...vals);
+  document.getElementById('weekChart').innerHTML = vals.map(v=>`<div class="bar" style="height:${(v/max)*100}%"></div>`).join('');
+  document.getElementById('weekLabels').innerHTML = days.map(d=>`<div class="bar-label" style="flex:1">${d}</div>`).join('');
+
+  // Order status chart
+  const statusCounts = {};
+  A.orders.forEach(o => statusCounts[o.status] = (statusCounts[o.status]||0)+1);
+  const statusColors = {PENDING:'#f59e0b',CONFIRMED:'#3b82f6',PROCESSING:'#8b5cf6',SHIPPED:'#06b6d4',DELIVERED:'#10b981',CANCELLED:'#ef4444'};
+  document.getElementById('orderStatusChart').innerHTML = Object.entries(statusCounts).map(([s,c])=>`
+    <div style="display:flex;align-items:center;gap:.75rem">
+      <div style="width:.75rem;height:.75rem;border-radius:50%;background:${statusColors[s]||'#ccc'};flex-shrink:0"></div>
+      <div style="flex:1;font-size:.8rem">${STATUS_AR[s]||s}</div>
+      <div style="font-size:.8rem;font-weight:600">${c}</div>
+      <div style="width:5rem;height:.375rem;background:var(--gray-100);border-radius:9999px;overflow:hidden">
+        <div style="height:100%;width:${c/A.orders.length*100}%;background:${statusColors[s]||'#ccc'}"></div>
+      </div>
+    </div>`).join('');
+
+  // Recent orders
+  const recent = A.orders.slice(0,5);
+  document.getElementById('recentOrdersList').innerHTML = recent.map(o=>`
+    <div style="display:flex;align-items:center;gap:.75rem;padding:.625rem 0;border-bottom:1px solid var(--gray-100)">
+      <div style="flex:1;min-width:0">
+        <div style="font-size:.8rem;font-weight:600">#${o.order_number}</div>
+        <div style="font-size:.7rem;color:var(--gray-400)">${o.user_name||'عميل'}</div>
+      </div>
+      <span class="badge ${STATUS_CLASS[o.status]||'badge-gray'}" style="font-size:.65rem">${STATUS_AR[o.status]||o.status}</span>
+      <div style="font-size:.8rem;font-weight:700;color:var(--red)">${o.total.toLocaleString('ar')} ج.س</div>
+    </div>`).join('');
+
+  // Pending payments
+  const pendPayList = A.payments.filter(p=>p.status==='PENDING');
+  document.getElementById('pendingPayList').innerHTML = pendPayList.length === 0
+    ? '<p style="color:var(--gray-400);font-size:.8rem;text-align:center;padding:1.5rem">لا توجد مدفوعات تنتظر التحقق</p>'
+    : pendPayList.map(p=>`
+      <div style="display:flex;align-items:center;gap:.75rem;padding:.625rem 0;border-bottom:1px solid var(--gray-100)">
+        <div style="flex:1">
+          <div style="font-size:.8rem;font-weight:600">#${p.order_number}</div>
+          <div style="font-size:.7rem;color:var(--gray-400)">${PAY_AR[p.method]||p.method}</div>
+        </div>
+        <div style="font-size:.8rem;font-weight:700;color:var(--red)">${p.amount.toLocaleString('ar')} ج.س</div>
+        <button class="btn btn-teal btn-sm" onclick="verifyPayment('${p.id}')">تحقق</button>
+      </div>`).join('');
+
+  // Clock
+  setInterval(() => {
+    document.getElementById('clockEl').textContent = new Date().toLocaleTimeString('ar-SD');
+  }, 1000);
+
+  renderOrders();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ORDERS
+// ═══════════════════════════════════════════════════════════════
+let ordersFiltered = [];
+function renderOrders() {
+  ordersFiltered = A.orders;
+  renderOrdersTable();
+}
+function filterOrders() {
+  const search = document.getElementById('orderSearch')?.value.toLowerCase()||'';
+  const status = document.getElementById('orderStatusFilter')?.value||'';
+  ordersFiltered = A.orders.filter(o => {
+    const matchSearch = !search || (o.order_number||'').toLowerCase().includes(search) || (o.user_name||'').includes(search);
+    const matchStatus = !status || o.status === status;
+    return matchSearch && matchStatus;
+  });
+  renderOrdersTable();
+}
+function renderOrdersTable() {
+  document.getElementById('ordersTbody').innerHTML = ordersFiltered.map(o=>`
+    <tr>
+      <td><span style="font-weight:600;font-size:.8rem">#${o.order_number}</span></td>
+      <td style="font-size:.8rem">${o.user_name||'—'}</td>
+      <td style="font-weight:700;color:var(--red);font-size:.85rem">${o.total.toLocaleString('ar')} ج.س</td>
+      <td><span class="badge badge-gray">${PAY_AR[o.payment_method]||o.payment_method}</span></td>
+      <td><span class="badge ${STATUS_CLASS[o.status]||'badge-gray'}">${STATUS_AR[o.status]||o.status}</span></td>
+      <td style="font-size:.75rem;color:var(--gray-400)">${fmtDateTime(o.created_at)}</td>
+      <td>
+        <div style="display:flex;gap:.375rem">
+          <button class="btn btn-outline btn-sm" onclick="showOrderDetail('${o.id}')">تفاصيل</button>
+          <button class="btn btn-teal btn-sm" onclick="updateOrderStatus('${o.id}')">تحديث</button>
+        </div>
+      </td>
+    </tr>`).join('');
+}
+
+function showOrderDetail(orderId) {
+  const o = A.orders.find(x=>x.id===orderId); if(!o) return;
+  showModal(`
+    <div class="modal-header">
+      <span class="modal-title">طلب #${o.order_number}</span>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div style="display:flex;gap:.5rem;margin-bottom:1rem;flex-wrap:wrap">
+      <span class="badge ${STATUS_CLASS[o.status]||'badge-gray'}">${STATUS_AR[o.status]||o.status}</span>
+      <span class="badge ${o.payment_status==='PAID'?'badge-green':'badge-yellow'}">${o.payment_status==='PAID'?'مدفوع':'قيد التحقق'}</span>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:1rem;font-size:.8rem">
+      <div><span style="color:var(--gray-400)">العميل:</span> <b>${o.user_name||'—'}</b></div>
+      <div><span style="color:var(--gray-400)">طريقة الدفع:</span> <b>${PAY_AR[o.payment_method]||o.payment_method}</b></div>
+      <div><span style="color:var(--gray-400)">المبلغ:</span> <b style="color:var(--red)">${o.total.toLocaleString('ar')} ج.س</b></div>
+      <div><span style="color:var(--gray-400)">التاريخ:</span> <b>${fmtDateTime(o.created_at)}</b></div>
+    </div>
+    <hr style="margin-bottom:1rem"/>
+    <h4 style="font-size:.85rem;font-weight:600;margin-bottom:.875rem">تحديث الحالة</h4>
+    <div style="display:flex;flex-wrap:wrap;gap:.5rem">
+      ${Object.entries(STATUS_AR).map(([s,ar])=>`
+        <button class="btn ${o.status===s?'btn-primary':'btn-outline'} btn-sm" onclick="setOrderStatus('${o.id}','${s}');closeModal()">${ar}</button>`).join('')}
+    </div>`);
+}
+
+function updateOrderStatus(orderId) { showOrderDetail(orderId); }
+
+function setOrderStatus(orderId, status) {
+  const o = A.orders.find(x=>x.id===orderId);
+  if(o) { o.status=status; renderOrdersTable(); initAdmin(); }
+  toast(`تم تحديث حالة الطلب إلى: ${STATUS_AR[status]}`, 'success');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// PRODUCTS
+// ═══════════════════════════════════════════════════════════════
+function renderProducts() {
+  document.getElementById('productsTbody').innerHTML = A.products.map(p=>`
+    <tr>
+      <td><div style="display:flex;align-items:center;gap:.75rem">
+        <div class="product-thumb-ph">🏥</div>
+        <div><div style="font-size:.8rem;font-weight:600">${p.name_ar}</div>
+          <div style="font-size:.7rem;color:var(--gray-400)">${p.name_en}</div></div>
+      </div></td>
+      <td style="font-size:.75rem;color:var(--gray-500)">${p.sku}</td>
+      <td style="font-size:.8rem">${p.category?.name_ar||'—'}</td>
+      <td style="font-size:.85rem;font-weight:700;color:var(--red)">${Number(p.price).toLocaleString('ar')} ج.س</td>
+      <td><span class="badge ${p.stock<=10?'badge-red':p.stock<=50?'badge-yellow':'badge-green'}">${p.stock}</span></td>
+      <td><span class="badge ${p.status==='ACTIVE'?'badge-green':'badge-gray'}">${p.status==='ACTIVE'?'نشط':'مسودة'}</span></td>
+      <td><div style="display:flex;gap:.375rem">
+        <button class="btn btn-outline btn-sm" onclick="showProductModal('${p.id}')">تعديل</button>
+        <button class="btn btn-danger btn-sm" onclick="toggleProductStatus('${p.id}')">${p.status==='ACTIVE'?'إيقاف':'تفعيل'}</button>
+      </div></td>
+    </tr>`).join('');
+}
+
+function toggleProductStatus(id) {
+  const p = A.products.find(x=>x.id===id);
+  if(p) { p.status = p.status==='ACTIVE'?'INACTIVE':'ACTIVE'; renderProducts(); toast('تم تحديث حالة المنتج','success'); }
+}
+
+function showProductModal(id) {
+  const p = id ? A.products.find(x=>x.id===id) : null;
+  showModal(`
+    <div class="modal-header">
+      <span class="modal-title">${p?'تعديل المنتج':'إضافة منتج جديد'}</span>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="form-grid">
+      <div class="form-row"><label class="label">الاسم بالعربية</label><input class="input" id="pNameAr" value="${p?.name_ar||''}"/></div>
+      <div class="form-row"><label class="label">الاسم بالإنجليزية</label><input class="input" id="pNameEn" value="${p?.name_en||''}"/></div>
+      <div class="form-row"><label class="label">SKU</label><input class="input" id="pSku" value="${p?.sku||''}"/></div>
+      <div class="form-row"><label class="label">السعر (ج.س)</label><input class="input" type="number" id="pPrice" value="${p?.price||''}"/></div>
+      <div class="form-row"><label class="label">سعر المقارنة</label><input class="input" type="number" id="pCompare" value="${p?.compare_price||''}"/></div>
+      <div class="form-row"><label class="label">المخزون</label><input class="input" type="number" id="pStock" value="${p?.stock||''}"/></div>
+      <div class="form-row" style="grid-column:1/-1"><label class="label">العلامة التجارية</label><input class="input" id="pBrand" value="${p?.brand||''}"/></div>
+    </div>
+    <div style="display:flex;gap:.75rem;margin-top:1.25rem;justify-content:flex-end">
+      <button class="btn btn-outline" onclick="closeModal()">إلغاء</button>
+      <button class="btn btn-primary" onclick="saveProduct('${p?.id||''}')">💾 حفظ</button>
+    </div>`);
+}
+
+function saveProduct(id) {
+  const nameAr = document.getElementById('pNameAr').value.trim();
+  if (!nameAr) { toast('أدخل اسم المنتج','error'); return; }
+  if (id) {
+    const p = A.products.find(x=>x.id===id);
+    if(p) { p.name_ar=nameAr; p.name_en=document.getElementById('pNameEn').value; p.price=parseFloat(document.getElementById('pPrice').value)||p.price; p.stock=parseInt(document.getElementById('pStock').value)||p.stock; }
+  } else {
+    A.products.unshift({id:'p-'+Date.now(),sku:document.getElementById('pSku').value,name_ar:nameAr,name_en:document.getElementById('pNameEn').value,price:parseFloat(document.getElementById('pPrice').value)||0,stock:parseInt(document.getElementById('pStock').value)||0,status:'ACTIVE',category:{name_ar:'—'},ce_marked:false,featured:false});
+  }
+  closeModal(); renderProducts(); toast(id?'تم تحديث المنتج':'تم إضافة المنتج','success');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// CATEGORIES
+// ═══════════════════════════════════════════════════════════════
+function renderCats() {
+  document.getElementById('catsTbody').innerHTML = A.cats.map(c=>`
+    <tr>
+      <td style="font-size:1.5rem">${c.icon||'🏥'}</td>
+      <td style="font-size:.85rem;font-weight:600">${c.name_ar}</td>
+      <td style="font-size:.8rem;color:var(--gray-500)">${c.name_en}</td>
+      <td style="font-size:.75rem;color:var(--gray-400)">${c.slug}</td>
+      <td><span class="badge badge-gray">${c.products_count||0}</span></td>
+      <td><span class="badge ${c.is_active?'badge-green':'badge-red'}">${c.is_active?'نشط':'متوقف'}</span></td>
+      <td><div style="display:flex;gap:.375rem">
+        <button class="btn btn-outline btn-sm" onclick="showCatModal('${c.id}')">تعديل</button>
+      </div></td>
+    </tr>`).join('');
+}
+
+function showCatModal(id) {
+  const c = id ? A.cats.find(x=>x.id===id) : null;
+  showModal(`
+    <div class="modal-header">
+      <span class="modal-title">${c?'تعديل الفئة':'إضافة فئة جديدة'}</span>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="form-grid">
+      <div class="form-row"><label class="label">الاسم بالعربية</label><input class="input" id="cNameAr" value="${c?.name_ar||''}"/></div>
+      <div class="form-row"><label class="label">الاسم بالإنجليزية</label><input class="input" id="cNameEn" value="${c?.name_en||''}"/></div>
+      <div class="form-row"><label class="label">الرابط (slug)</label><input class="input" id="cSlug" value="${c?.slug||''}"/></div>
+      <div class="form-row"><label class="label">الأيقونة (emoji)</label><input class="input" id="cIcon" value="${c?.icon||'🏥'}"/></div>
+    </div>
+    <div style="display:flex;gap:.75rem;margin-top:1.25rem;justify-content:flex-end">
+      <button class="btn btn-outline" onclick="closeModal()">إلغاء</button>
+      <button class="btn btn-primary" onclick="saveCat('${c?.id||''}')">💾 حفظ</button>
+    </div>`);
+}
+
+function saveCat(id) {
+  const nameAr = document.getElementById('cNameAr').value.trim();
+  if (!nameAr) { toast('أدخل اسم الفئة','error'); return; }
+  if (id) {
+    const c = A.cats.find(x=>x.id===id);
+    if(c) { c.name_ar=nameAr; c.name_en=document.getElementById('cNameEn').value; c.icon=document.getElementById('cIcon').value; }
+  } else {
+    A.cats.push({id:'cat-'+Date.now(),name_ar:nameAr,name_en:document.getElementById('cNameEn').value,slug:document.getElementById('cSlug').value,icon:document.getElementById('cIcon').value||'🏥',is_active:true,products_count:0});
+  }
+  closeModal(); renderCats(); toast(id?'تم تحديث الفئة':'تم إضافة الفئة','success');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// INVENTORY
+// ═══════════════════════════════════════════════════════════════
+function renderInventory() {
+  const low = A.products.filter(p=>p.stock<=10);
+  const total = A.products.reduce((s,p)=>s+p.stock,0);
+  document.getElementById('lowStockCount').textContent = low.length;
+  document.getElementById('totalUnits').textContent = total.toLocaleString('ar');
+  document.getElementById('inventoryTbody').innerHTML = A.products.map(p=>`
+    <tr>
+      <td><div style="font-size:.8rem;font-weight:600">${p.name_ar}</div></td>
+      <td style="font-size:.75rem;color:var(--gray-400)">${p.sku}</td>
+      <td>
+        <input type="number" class="input" style="width:5rem;padding:.375rem .625rem;text-align:center" value="${p.stock}" id="inv_${p.id}" min="0"/>
+      </td>
+      <td style="font-size:.8rem;color:var(--gray-400)">10</td>
+      <td><span class="badge ${p.stock===0?'badge-red':p.stock<=10?'badge-yellow':'badge-green'}">${p.stock===0?'نفذ':p.stock<=10?'منخفض':'متوفر'}</span></td>
+      <td><button class="btn btn-teal btn-sm" onclick="updateStock('${p.id}')">حفظ</button></td>
+    </tr>`).join('');
+}
+
+function updateStock(id) {
+  const p = A.products.find(x=>x.id===id);
+  const val = parseInt(document.getElementById('inv_'+id)?.value)||0;
+  if(p) { p.stock=val; renderInventory(); toast('تم تحديث المخزون','success'); }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// PAYMENTS
+// ═══════════════════════════════════════════════════════════════
+function renderPayments() {
+  document.getElementById('paymentsTbody').innerHTML = A.payments.map(p=>`
+    <tr>
+      <td style="font-size:.8rem;font-weight:600">#${p.order_number}</td>
+      <td><span class="badge badge-blue">${PAY_AR[p.method]||p.method}</span></td>
+      <td style="font-weight:700;color:var(--red)">${p.amount.toLocaleString('ar')} ج.س</td>
+      <td>${p.receipt_url?`<button class="btn btn-outline btn-sm" onclick="viewReceipt('${p.receipt_url}')">📄 عرض</button>`:'<span style="color:var(--gray-400);font-size:.75rem">لا يوجد</span>'}</td>
+      <td><span class="badge ${p.status==='PAID'?'badge-green':'badge-yellow'}">${p.status==='PAID'?'محقق':'قيد الانتظار'}</span></td>
+      <td style="font-size:.75rem;color:var(--gray-400)">${fmtDateTime(p.created_at)}</td>
+      <td>
+        ${p.status==='PENDING'
+          ? `<div style="display:flex;gap:.375rem"><button class="btn btn-teal btn-sm" onclick="verifyPayment('${p.id}')">✅ تحقق</button><button class="btn btn-danger btn-sm" onclick="rejectPayment('${p.id}')">❌ رفض</button></div>`
+          : '<span style="color:var(--gray-400);font-size:.75rem">مكتمل</span>'}
+      </td>
+    </tr>`).join('');
+}
+
+function verifyPayment(id) {
+  const p = A.payments.find(x=>x.id===id);
+  if(p) {
+    p.status='PAID';
+    const o = A.orders.find(x=>x.order_number===p.order_number);
+    if(o) { o.payment_status='PAID'; if(o.status==='PENDING') o.status='CONFIRMED'; }
+    renderPayments(); initAdmin();
+    toast('تم التحقق من الدفع وتحديث الطلب ✅','success');
+  }
+}
+
+function rejectPayment(id) {
+  const p = A.payments.find(x=>x.id===id);
+  if(p) { p.status='FAILED'; renderPayments(); toast('تم رفض الدفع','error'); }
+}
+
+function viewReceipt(url) {
+  showModal(`
+    <div class="modal-header">
+      <span class="modal-title">📄 إيصال الدفع</span>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <img src="${url}" class="receipt-img" onerror="this.src='https://via.placeholder.com/400x500?text=Receipt+Image'"/>
+    <div style="display:flex;gap:.75rem;margin-top:1rem;justify-content:flex-end">
+      <button class="btn btn-outline" onclick="closeModal()">إغلاق</button>
+      <a href="${url}" target="_blank" class="btn btn-primary">🔗 فتح</a>
+    </div>`);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// REPORTS
+// ═══════════════════════════════════════════════════════════════
+function renderReports() {
+  // Top products (fake)
+  const topProds = A.products.slice(0,5).map((p,i)=>({...p,sold:Math.floor(Math.random()*100)+20})).sort((a,b)=>b.sold-a.sold);
+  document.getElementById('topProductsReport').innerHTML = topProds.map((p,i)=>`
+    <div style="display:flex;align-items:center;gap:.75rem;padding:.625rem 0;border-bottom:1px solid var(--gray-100)">
+      <span style="width:1.5rem;height:1.5rem;background:${['#fbbf24','#9ca3af','#cd7f32','#e5e7eb','#e5e7eb'][i]};border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:700">${i+1}</span>
+      <div style="flex:1;font-size:.8rem;font-weight:500">${p.name_ar}</div>
+      <div style="font-size:.8rem;font-weight:700">${p.sold} وحدة</div>
+    </div>`).join('');
+
+  // Payment methods
+  const methods = {};
+  A.orders.forEach(o => methods[o.payment_method] = (methods[o.payment_method]||0)+1);
+  const colors = ['#dc2626','#2563eb','#059669','#d97706','#7c3aed'];
+  document.getElementById('paymentMethodsReport').innerHTML = Object.entries(methods).map(([m,c],i)=>`
+    <div style="display:flex;align-items:center;gap:.75rem;padding:.5rem 0">
+      <div style="width:.75rem;height:.75rem;border-radius:50%;background:${colors[i%colors.length]};flex-shrink:0"></div>
+      <div style="flex:1;font-size:.8rem">${PAY_AR[m]||m}</div>
+      <div style="font-size:.8rem;font-weight:600">${c} طلب</div>
+      <div style="width:4rem;height:.35rem;background:var(--gray-100);border-radius:9999px;overflow:hidden">
+        <div style="height:100%;width:${c/A.orders.length*100}%;background:${colors[i%colors.length]}"></div>
+      </div>
+    </div>`).join('');
+
+  // Monthly summary
+  document.getElementById('monthlySummary').innerHTML = `
+    <table style="width:100%;font-size:.8rem">
+      <thead><tr style="background:var(--gray-50)">
+        <th style="padding:.625rem .75rem;text-align:right;font-weight:600;color:var(--gray-500)">الشهر</th>
+        <th style="padding:.625rem .75rem;text-align:right;font-weight:600;color:var(--gray-500)">الطلبات</th>
+        <th style="padding:.625rem .75rem;text-align:right;font-weight:600;color:var(--gray-500)">الإيرادات</th>
+        <th style="padding:.625rem .75rem;text-align:right;font-weight:600;color:var(--gray-500)">العملاء الجدد</th>
+      </tr></thead>
+      <tbody>
+        ${[['يونيو 2024',${A.orders.length},${A.orders.reduce((s,o)=>s+o.total,0)},${A.customers.length}],['مايو 2024',12,8500,18],['أبريل 2024',8,5200,12]].map(r=>`
+          <tr><td style="padding:.625rem .75rem">${r[0]}</td>
+              <td style="padding:.625rem .75rem">${r[1]}</td>
+              <td style="padding:.625rem .75rem;color:var(--red);font-weight:600">${Number(r[2]).toLocaleString('ar')} ج.س</td>
+              <td style="padding:.625rem .75rem">${r[3]}</td></tr>`).join('')}
+      </tbody>
+    </table>`;
+}
+
+function exportCSV() {
+  const rows = [['رقم الطلب','العميل','المبلغ','الحالة','التاريخ'],...A.orders.map(o=>[o.order_number,o.user_name||'',o.total,STATUS_AR[o.status]||o.status,fmtDate(o.created_at)])];
+  const csv = rows.map(r=>r.join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent('\uFEFF'+csv);
+  a.download = 'sudanmed-orders.csv';
+  a.click();
+  toast('تم تصدير CSV','success');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// CUSTOMERS
+// ═══════════════════════════════════════════════════════════════
+function renderCustomers() {
+  renderCustomersTable(A.customers);
+}
+function filterCustomers() {
+  const q = document.getElementById('customerSearch')?.value.toLowerCase()||'';
+  renderCustomersTable(A.customers.filter(c => !q || (c.first_name+' '+c.last_name).includes(q) || (c.email||'').includes(q)));
+}
+function renderCustomersTable(list) {
+  document.getElementById('customersTbody').innerHTML = list.map(c=>`
+    <tr>
+      <td><div style="font-size:.85rem;font-weight:600">${c.first_name} ${c.last_name}</div></td>
+      <td style="font-size:.8rem;color:var(--gray-500)">${c.email||'—'}</td>
+      <td style="font-size:.8rem">${c.phone||'—'}</td>
+      <td><span class="badge badge-blue">${c.orders_count||0}</span></td>
+      <td style="font-size:.85rem;font-weight:700;color:var(--red)">${Number(c.total_spent||0).toLocaleString('ar')} ج.س</td>
+      <td style="font-size:.75rem;color:var(--gray-400)">${fmtDate(c.created_at)}</td>
+    </tr>`).join('');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SUPPORT
+// ═══════════════════════════════════════════════════════════════
+const DEMO_TICKETS = [
+  {id:'t-1',ticket_number:'TKT-A1B2',subject:'طلبت ولم يصل',customer:'أحمد محمد',category:'SHIPPING_ISSUE',priority:'HIGH',status:'OPEN',created_at:'2024-06-10T10:00:00Z'},
+  {id:'t-2',ticket_number:'TKT-C3D4',subject:'استفسار عن المنتج',customer:'فاطمة',category:'PRODUCT_INQUIRY',priority:'LOW',status:'IN_PROGRESS',created_at:'2024-06-09T09:00:00Z'},
+];
+const TICKET_STATUS_AR = {OPEN:'مفتوح',IN_PROGRESS:'جارٍ',WAITING_CUSTOMER:'ينتظر العميل',RESOLVED:'محلول',CLOSED:'مغلق'};
+const PRIORITY_AR = {LOW:'منخفض',MEDIUM:'متوسط',HIGH:'عالٍ',URGENT:'عاجل'};
+const PRIORITY_CLASS = {LOW:'badge-gray',MEDIUM:'badge-blue',HIGH:'badge-yellow',URGENT:'badge-red'};
+function renderSupport() {
+  document.getElementById('supportTbody').innerHTML = DEMO_TICKETS.map(t=>`
+    <tr>
+      <td style="font-size:.8rem;font-weight:600">#${t.ticket_number}</td>
+      <td style="font-size:.8rem">${t.subject}</td>
+      <td style="font-size:.8rem">${t.customer}</td>
+      <td style="font-size:.75rem">${t.category}</td>
+      <td><span class="badge ${PRIORITY_CLASS[t.priority]||'badge-gray'}">${PRIORITY_AR[t.priority]||t.priority}</span></td>
+      <td><span class="badge badge-yellow">${TICKET_STATUS_AR[t.status]||t.status}</span></td>
+      <td><button class="btn btn-outline btn-sm" onclick="toast('جارٍ فتح التذكرة...','')">فتح</button></td>
+    </tr>`).join('');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// MODAL
+// ═══════════════════════════════════════════════════════════════
+function showModal(html) {
+  let overlay = document.getElementById('globalModal');
+  if (!overlay) { overlay=document.createElement('div'); overlay.id='globalModal'; overlay.className='modal-overlay'; overlay.onclick=e=>{if(e.target===overlay)closeModal();}; document.body.appendChild(overlay); }
+  overlay.innerHTML = `<div class="modal-box">${html}</div>`;
+  overlay.style.display='flex';
+}
+function closeModal() {
+  const m=document.getElementById('globalModal');
+  if(m) m.style.display='none';
+}
+
+// ═══════════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════════
+if (A.loggedIn) {
+  document.getElementById('loginPage').style.display='none';
+  document.getElementById('adminPanel').style.display='flex';
+  initAdmin();
+} else {
+  document.getElementById('loginPage').style.display='flex';
+  document.getElementById('adminPanel').style.display='none';
+}
+
+// Keyboard shortcut
+document.addEventListener('keydown', e => {
+  if (e.key==='Escape') closeModal();
+});
+</script>
+</body>
+</html>
