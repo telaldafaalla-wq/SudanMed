@@ -442,26 +442,89 @@ footer{background:#111827;color:#d1d5db;margin-top:4rem}
 // ═══════════════════════════════════════════════════════════════
 // SUPABASE CONFIG
 // ═══════════════════════════════════════════════════════════════
+// FALLBACK DATA (تُستخدم عند عدم وجود اتصال بـ Supabase)
+// ═══════════════════════════════════════════════════════════════
+const FALLBACK_CATS = [
+  {id:'cat-1',name_ar:'مستلزمات الوقاية الشخصية',name_en:'PPE',slug:'ppe',icon:'🥼',is_active:true,sort_order:1},
+  {id:'cat-2',name_ar:'مستلزمات الحقن والتسريب',name_en:'Injection Supplies',slug:'injection-supplies',icon:'💉',is_active:true,sort_order:2},
+  {id:'cat-3',name_ar:'مستلزمات الجراحة',name_en:'Surgical Supplies',slug:'surgical-supplies',icon:'🔪',is_active:true,sort_order:3},
+  {id:'cat-4',name_ar:'مستلزمات التعقيم',name_en:'Sterilization',slug:'sterilization',icon:'🧴',is_active:true,sort_order:4},
+  {id:'cat-5',name_ar:'مستلزمات المختبرات',name_en:'Lab Supplies',slug:'lab-supplies',icon:'🧪',is_active:true,sort_order:5},
+  {id:'cat-6',name_ar:'مستلزمات العناية بالجروح',name_en:'Wound Care',slug:'wound-care',icon:'🩹',is_active:true,sort_order:6},
+];
+const FALLBACK_PRODUCTS = [
+  {id:'p-1',sku:'PPE-001',name_ar:'كمامة N95 طبية معتمدة',name_en:'N95 Medical Mask',slug:'n95-mask',price:150,compare_price:200,stock:500,brand:'3M',manufacturer:'3M USA',origin:'USA',featured:true,status:'ACTIVE',ce_marked:true,sfd_approved:true,category_id:'cat-1',image_url:'https://images.unsplash.com/photo-1584634731339-252c581abfc5?w=400&q=80',short_desc:'كمامة N95 معتمدة من FDA وCE للحماية من الجسيمات الدقيقة',description:'كمامة N95 عالية الجودة توفر حماية 95% من الجسيمات الدقيقة. معتمدة دولياً.',category:{name_ar:'مستلزمات الوقاية الشخصية',slug:'ppe',icon:'🥼'}},
+  {id:'p-2',sku:'INJ-001',name_ar:'محقنة 5 مل ذات إبرة',name_en:'Syringe 5ml with Needle',slug:'syringe-5ml',price:25,compare_price:null,stock:2000,brand:'Terumo',manufacturer:'Terumo Japan',origin:'Japan',featured:true,status:'ACTIVE',ce_marked:true,sfd_approved:false,category_id:'cat-2',image_url:'https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=400&q=80',short_desc:'محقنة طبية معقمة 5 مل مع إبرة 21G',description:'محقنة طبية معقمة ذات جودة عالية، مثالية للاستخدام في المستشفيات والعيادات.',category:{name_ar:'مستلزمات الحقن',slug:'injection-supplies',icon:'💉'}},
+  {id:'p-3',sku:'INJ-002',name_ar:'كانيولا وريدية 18G',name_en:'IV Cannula 18G',slug:'iv-cannula-18g',price:45,compare_price:60,stock:1000,brand:'BD',manufacturer:'BD Medical',origin:'USA',featured:true,status:'ACTIVE',ce_marked:true,sfd_approved:true,category_id:'cat-2',image_url:'https://images.unsplash.com/photo-1631549916768-4119b2e5f926?w=400&q=80',short_desc:'كانيولا وريدية 18G بغطاء ملون للتمييز السريع',description:'كانيولا وريدية عالية الجودة مصنوعة من البولي يوريثان الطبي.',category:{name_ar:'مستلزمات الحقن',slug:'injection-supplies',icon:'💉'}},
+  {id:'p-4',sku:'SRG-001',name_ar:'خيط جراحي مضفور 2-0',name_en:'Braided Suture 2-0',slug:'suture-2-0',price:280,compare_price:null,stock:300,brand:'Ethicon',manufacturer:'Ethicon J&J',origin:'USA',featured:false,status:'ACTIVE',ce_marked:true,sfd_approved:true,category_id:'cat-3',image_url:'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=400&q=80',short_desc:'خيط جراحي مضفور 2-0 قابل للامتصاص',description:'خيط جراحي مضفور قابل للامتصاص، مثالي للجراحات العامة.',category:{name_ar:'مستلزمات الجراحة',slug:'surgical-supplies',icon:'🔪'}},
+  {id:'p-5',sku:'STR-001',name_ar:'بيتادين محلول 10% - 500مل',name_en:'Povidone Iodine 10% 500ml',slug:'betadine-500ml',price:120,compare_price:150,stock:800,brand:'Betadine',manufacturer:'Mundipharma',origin:'Netherlands',featured:true,status:'ACTIVE',ce_marked:false,sfd_approved:true,category_id:'cat-4',image_url:'https://images.unsplash.com/photo-1587854692152-cbe660dbde88?w=400&q=80',short_desc:'محلول بيتادين 10% للتعقيم الجراحي',description:'محلول بيتادين يستخدم لتعقيم الجروح والجلد قبل الجراحة.',category:{name_ar:'مستلزمات التعقيم',slug:'sterilization',icon:'🧴'}},
+  {id:'p-6',sku:'STR-002',name_ar:'كحول إيثيلي 70% - لتر',name_en:'Ethyl Alcohol 70% 1L',slug:'ethanol-70-1l',price:85,compare_price:null,stock:1500,brand:'SudanChem',manufacturer:'SudanChem',origin:'Sudan',featured:false,status:'ACTIVE',ce_marked:false,sfd_approved:true,category_id:'cat-4',image_url:'https://images.unsplash.com/photo-1584017911766-d451b3d0e843?w=400&q=80',short_desc:'كحول إيثيلي 70% للتطهير والتعقيم',description:'كحول إيثيلي نقاء عالٍ للاستخدام في التطهير والتعقيم الطبي.',category:{name_ar:'مستلزمات التعقيم',slug:'sterilization',icon:'🧴'}},
+  {id:'p-7',sku:'LAB-001',name_ar:'أنبوب تجميع دم EDTA 3مل',name_en:'EDTA Blood Collection Tube 3ml',slug:'edta-tube-3ml',price:18,compare_price:25,stock:5000,brand:'BD Vacutainer',manufacturer:'BD',origin:'USA',featured:true,status:'ACTIVE',ce_marked:true,sfd_approved:false,category_id:'cat-5',image_url:'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=400&q=80',short_desc:'أنبوب تجميع الدم بغطاء بنفسجي EDTA',description:'أنبوب تجميع دم معقم بمضاد التخثر EDTA للفحوصات الهيماتولوجية.',category:{name_ar:'مستلزمات المختبرات',slug:'lab-supplies',icon:'🧪'}},
+  {id:'p-8',sku:'WND-001',name_ar:'ضمادة لاصقة طبية 10×10 سم',name_en:'Medical Adhesive Bandage 10x10cm',slug:'bandage-10x10',price:35,compare_price:45,stock:3000,brand:'Hartmann',manufacturer:'Paul Hartmann AG',origin:'Germany',featured:false,status:'ACTIVE',ce_marked:true,sfd_approved:true,category_id:'cat-6',image_url:'https://images.unsplash.com/photo-1583947581924-860bda6a26df?w=400&q=80',short_desc:'ضمادة لاصقة طبية معقمة 10×10 سم',description:'ضمادة لاصقة طبية مصنوعة من مادة غير محيطة لامتصاص الإفرازات.',category:{name_ar:'مستلزمات الجروح',slug:'wound-care',icon:'🩹'}},
+  {id:'p-9',sku:'PPE-002',name_ar:'قفازات فينيل غير معقمة M',name_en:'Vinyl Gloves Non-Sterile Medium',slug:'vinyl-gloves-m',price:95,compare_price:120,stock:200,brand:'Sempermed',manufacturer:'Semperit',origin:'Austria',featured:false,status:'ACTIVE',ce_marked:true,sfd_approved:false,category_id:'cat-1',image_url:'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=400&q=80',short_desc:'قفازات فينيل غير معقمة علبة 100 قطعة مقاس M',description:'قفازات فينيل خالية من البودرة والاتكس، آمنة للحساسية.',category:{name_ar:'مستلزمات الوقاية',slug:'ppe',icon:'🥼'}},
+  {id:'p-10',sku:'INJ-003',name_ar:'جهاز تسريب IV (Infusion Set)',name_en:'IV Infusion Set',slug:'iv-infusion-set',price:30,compare_price:null,stock:2500,brand:'B.Braun',manufacturer:'B.Braun Germany',origin:'Germany',featured:true,status:'ACTIVE',ce_marked:true,sfd_approved:true,category_id:'cat-2',image_url:'https://images.unsplash.com/photo-1631549916768-4119b2e5f926?w=400&q=80',short_desc:'جهاز تسريب IV كامل مع فلتر وعجلة تحكم',description:'جهاز تسريب وريدي معقم كامل مع فلتر ومخرج إبرة وعجلة تحكم في التدفق.',category:{name_ar:'مستلزمات الحقن',slug:'injection-supplies',icon:'💉'}},
+  {id:'p-11',sku:'SRG-002',name_ar:'شاش طبي معقم 10×10 سم',name_en:'Sterile Gauze 10x10cm',slug:'gauze-10x10',price:15,compare_price:20,stock:10000,brand:'MedLine',manufacturer:'MedLine Industries',origin:'USA',featured:false,status:'ACTIVE',ce_marked:true,sfd_approved:true,category_id:'cat-3',image_url:'https://images.unsplash.com/photo-1583947581924-860bda6a26df?w=400&q=80',short_desc:'شاش طبي معقم 8 طبقات 10×10 سم',description:'شاش طبي معقم عالي الجودة مناسب لتغطية الجروح وامتصاص الإفرازات.',category:{name_ar:'مستلزمات الجراحة',slug:'surgical-supplies',icon:'🔪'}},
+  {id:'p-12',sku:'LAB-002',name_ar:'اختبار سريع كوفيد-19',name_en:'Rapid COVID-19 Antigen Test',slug:'covid-rapid-test',price:250,compare_price:350,stock:500,brand:'Abbott',manufacturer:'Abbott Rapid Diagnostics',origin:'USA',featured:true,status:'ACTIVE',ce_marked:true,sfd_approved:true,category_id:'cat-5',image_url:'https://images.unsplash.com/photo-1605289982774-9a6fef564df8?w=400&q=80',short_desc:'اختبار سريع للكشف عن كوفيد-19 خلال 15 دقيقة',description:'اختبار المستضد السريع للكشف عن فيروس COVID-19. نتائج خلال 15 دقيقة.',category:{name_ar:'مستلزمات المختبرات',slug:'lab-supplies',icon:'🧪'}},
+];
+
+// ═══════════════════════════════════════════════════════════════
 const SB_URL = 'https://digfrefpowwigahzogko.supabase.co/rest/v1';
 const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRpZ2ZyZWZwb3d3aWdhaHpvZ2tvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk5ODkwNjMsImV4cCI6MjA5NTU2NTA2M30.Pal6_vz03Uzz3pgM71FH0xoiEwbeN8VIOC-xDc3um6E';
 
 async function sbFetch(path, opts = {}) {
-  const res = await fetch(`${SB_URL}/${path}`, {
-    ...opts,
-    headers: {
-      'apikey': SB_KEY,
-      'Authorization': `Bearer ${SB_KEY}`,
-      'Content-Type': 'application/json',
-      'Prefer': 'return=representation',
-      ...(opts.headers || {}),
-    },
-  });
-  if (!res.ok) {
-    const err = await res.text();
-    throw new Error(`Supabase ${res.status}: ${err}`);
+  try {
+    const res = await fetch(`${SB_URL}/${path}`, {
+      ...opts,
+      headers: {
+        'apikey': SB_KEY,
+        'Authorization': `Bearer ${SB_KEY}`,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=representation',
+        ...(opts.headers || {}),
+      },
+    });
+    if (!res.ok) {
+      const err = await res.text();
+      // إذا كان الخطأ 404 أو جدول غير موجود، استخدم الـ fallback
+      if (res.status === 404 || err.includes('relation') || err.includes('does not exist') || res.status === 400) {
+        return sbFallback(path, opts);
+      }
+      throw new Error(`Supabase ${res.status}: ${err}`);
+    }
+    const txt = await res.text();
+    const result = txt ? JSON.parse(txt) : null;
+    // إذا رجعت مصفوفة فارغة وعندنا fallback، استخدمه
+    if (Array.isArray(result) && result.length === 0 && !opts.method) {
+      const fb = sbFallback(path, opts);
+      if (fb && fb.length > 0) return fb;
+    }
+    return result;
+  } catch(e) {
+    if (e.message && e.message.startsWith('Supabase')) throw e;
+    // خطأ شبكة — استخدم fallback
+    return sbFallback(path, opts);
   }
-  const txt = await res.text();
-  return txt ? JSON.parse(txt) : null;
+}
+
+// بيانات احتياطية عند فشل Supabase
+function sbFallback(path, opts = {}) {
+  if (opts.method && opts.method !== 'GET') return null;
+  const p = path.split('?')[0];
+  if (p === 'categories') return FALLBACK_CATS;
+  if (p === 'products') {
+    const params = path.includes('?') ? path.split('?')[1] : '';
+    if (params.includes('featured=eq.true')) return FALLBACK_PRODUCTS.filter(x=>x.featured);
+    if (params.includes('category_id=eq.')) {
+      const catId = params.match(/category_id=eq\.([^&]+)/)?.[1];
+      return FALLBACK_PRODUCTS.filter(x=>x.category_id===catId);
+    }
+    if (params.includes('id=eq.')) {
+      const id = params.match(/id=eq\.([^&]+)/)?.[1];
+      return FALLBACK_PRODUCTS.filter(x=>x.id===id);
+    }
+    return FALLBACK_PRODUCTS.filter(x=>x.status==='ACTIVE');
+  }
+  return [];
 }
 
 // ═══════════════════════════════════════════════════════════════
