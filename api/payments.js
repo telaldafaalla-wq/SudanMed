@@ -1,84 +1,186 @@
-// api/payments.js — Bankak receipt submission + verification
-const SUPABASE_URL = process.env.SUPABASE_URL  || 'https://digfrefpowwigahzogko.supabase.co';
-const SUPABASE_KEY = process.env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRpZ2ZyZWZwb3d3aWdhaHpvZ2tvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk5ODkwNjMsImV4cCI6MjA5NTU2NTA2M30.Pal6_vz03Uzz3pgM71FH0xoiEwbeN8VIOC-xDc3um6E';
-const BANKAK_ACCOUNT = process.env.BANKAK_ACCOUNT || '+249912345678';
+// api/payments.js — Secured v2.0
+// ✅ Rate Limiting | ✅ Admin Auth for verify | ✅ Input Validation
+// ✅ Safe Errors | ✅ Security Headers
+
+import {
+  checkRateLimit, setSecurityHeaders, safeError,
+  sanitizeString, sanitizeUUID, verifyAdminKey, getClientIP
+} from './_middleware.js';
+
+const SUPABASE_URL    = process.env.SUPABASE_URL        || 'https://digfrefpowwigahzogko.supabase.co';
+const SUPABASE_KEY    = process.env.SUPABASE_ANON_KEY;
+const BANKAK_ACCOUNT  = process.env.BANKAK_ACCOUNT      || '+249912345678';
 
 async function sb(path, opts = {}) {
   const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
     ...opts,
-    headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json', 'Prefer': 'return=representation', ...(opts.headers || {}) },
+    headers: {
+      'apikey':        SUPABASE_KEY,
+      'Authorization': `Bearer ${SUPABASE_KEY}`,
+      'Content-Type':  'application/json',
+      'Prefer':        'return=representation',
+      ...(opts.headers || {}),
+    },
   });
-  if (!res.ok) throw new Error(await res.text());
+  if (!res.ok) throw new Error(`DB_ERROR_${res.status}`);
   const txt = await res.text();
   return txt ? JSON.parse(txt) : null;
 }
 
+// Validate receipt URL — only allow https image URLs
+function isValidReceiptUrl(url) {
+  if (typeof url !== 'string' || !url.startsWith('https://')) return false;
+  try {
+    const parsed = new URL(url);
+    // Allow only known cloud storage providers
+    const allowedHosts = [
+      'res.cloudinary.com',
+      'storage.googleapis.com',
+      'firebasestorage.googleapis.com',
+      'amazonaws.com',
+    ];
+    return allowedHosts.some(h => parsed.hostname.endsWith(h));
+  } catch {
+    return false;
+  }
+}
+
 export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  setSecurityHeaders(res);
   if (req.method === 'OPTIONS') return res.status(200).end();
+
+  const ip = getClientIP(req);
+  const rl = checkRateLimit(ip, '/api/payments');
+  res.setHeader('X-RateLimit-Limit',     rl.max);
+  res.setHeader('X-RateLimit-Remaining', rl.remaining);
+  res.setHeader('X-RateLimit-Reset',     Math.ceil(rl.resetAt / 1000));
+
+  if (!rl.allowed) {
+    res.setHeader('Retry-After', Math.ceil((rl.resetAt - Date.now()) / 1000));
+    return safeError(res, 429, 'طلبات كثيرة — انتظر قليلاً');
+  }
 
   const { action } = req.query;
 
-  // GET instructions — تعليمات بنكك
+  // ─── GET: تعليمات بنكك ─────────────────────────────────────
   if (req.method === 'GET' && action === 'bankak-instructions') {
-    const { order_id } = req.query;
-    const [order] = await sb(`orders?id=eq.${order_id}&select=order_number,total`);
-    if (!order) return res.status(404).json({ error: 'الطلب غير موجود' });
-    return res.json({
-      success: true,
-      data: {
-        accountNumber: BANKAK_ACCOUNT,
-        amount: order.total,
-        reference: order.order_number,
-        steps: [
-          'افتح تطبيق بنكك',
-          'اختر "تحويل"',
-          `أدخل الرقم: ${BANKAK_ACCOUNT}`,
-          `أدخل المبلغ: ${order.total} جنيه`,
-          `اكتب في البيان: ${order.order_number}`,
-          'أكمل التحويل وارفع صورة الإيصال'
-        ]
-      }
-    });
+    const orderId = sanitizeUUID(req.query.order_id);
+    if (!orderId) return safeError(res, 400, 'معرّف الطلب غير صحيح');
+
+    try {
+      const orders = await sb(`orders?id=eq.${orderId}&select=order_number,total&status=eq.PENDING`);
+      const order  = orders?.[0];
+      if (!order) return safeError(res, 404, 'الطلب غير موجود أو مكتمل بالفعل');
+
+      return res.json({
+        success: true,
+        data: {
+          accountNumber: BANKAK_ACCOUNT,
+          amount:        order.total,
+          reference:     order.order_number,
+          steps: [
+            'افتح تطبيق بنكك',
+            'اختر "تحويل"',
+            `أدخل الرقم: ${BANKAK_ACCOUNT}`,
+            `أدخل المبلغ: ${order.total} جنيه`,
+            `اكتب في البيان: ${order.order_number}`,
+            'أكمل التحويل وارفع صورة الإيصال',
+          ],
+        },
+      });
+    } catch (err) {
+      return safeError(res, 500, 'حدث خطأ', err);
+    }
   }
 
-  // POST — رفع إيصال بنكك
+  // ─── POST: رفع إيصال بنكك ──────────────────────────────────
   if (req.method === 'POST' && action === 'bankak-receipt') {
     try {
-      const { order_id, receipt_url, bankak_ref } = req.body;
+      const { order_id, receipt_url, bankak_ref } = req.body || {};
+
+      const orderId    = sanitizeUUID(order_id);
+      const bankakRef  = sanitizeString(bankak_ref || '', 100);
+
+      if (!orderId) return safeError(res, 400, 'معرّف الطلب غير صحيح');
+
+      // Validate receipt URL
+      if (!isValidReceiptUrl(receipt_url)) {
+        return safeError(res, 400, 'رابط الإيصال غير صحيح — يجب رفع الصورة عبر Cloudinary');
+      }
+
+      // Check order exists and is PENDING
+      const orders = await sb(`orders?id=eq.${orderId}&select=id,total&payment_status=eq.PENDING`);
+      if (!orders?.length) {
+        return safeError(res, 404, 'الطلب غير موجود أو تم الدفع مسبقاً');
+      }
+
+      const order = orders[0];
+
       const [payment] = await sb('payments', {
         method: 'POST',
-        body: JSON.stringify({ order_id, method: 'BANKAK', amount: 0, status: 'PENDING', receipt_url, bankak_ref }),
+        body: JSON.stringify({
+          order_id:    orderId,
+          method:      'BANKAK',
+          amount:      order.total,
+          status:      'PENDING',
+          receipt_url: receipt_url,
+          bankak_ref:  bankakRef || null,
+        }),
       });
-      return res.status(201).json({ success: true, data: payment, message: 'سيتم التحقق خلال 10-60 دقيقة' });
+
+      return res.status(201).json({
+        success: true,
+        data:    { id: payment.id, status: payment.status },
+        message: 'سيتم التحقق خلال 10-60 دقيقة',
+      });
     } catch (err) {
-      return res.status(500).json({ success: false, error: err.message });
+      return safeError(res, 500, 'حدث خطأ في رفع الإيصال', err);
     }
   }
 
-  // PATCH — تحقق يدوي من الدفع (إدارة)
+  // ─── PATCH: تحقق يدوي (إدارة فقط) ─────────────────────────
   if (req.method === 'PATCH' && action === 'verify') {
+    // 🔐 يتطلب Admin API Key
+    if (!verifyAdminKey(req)) {
+      return safeError(res, 401, 'غير مصرح — مطلوب مفتاح الإدارة');
+    }
+
     try {
-      const { payment_id, approved, admin_id } = req.body;
+      const { payment_id, approved } = req.body || {};
+
+      const paymentId = sanitizeUUID(payment_id);
+      if (!paymentId) return safeError(res, 400, 'معرّف الدفع غير صحيح');
+      if (typeof approved !== 'boolean') return safeError(res, 400, 'يجب تحديد approved: true/false');
+
       const newStatus = approved ? 'PAID' : 'FAILED';
-      await sb(`payments?id=eq.${payment_id}`, {
+
+      await sb(`payments?id=eq.${paymentId}`, {
         method: 'PATCH',
-        body: JSON.stringify({ status: newStatus, verified_at: new Date().toISOString(), verified_by: admin_id }),
+        body: JSON.stringify({
+          status:      newStatus,
+          verified_at: new Date().toISOString(),
+        }),
       });
-      const [payment] = await sb(`payments?id=eq.${payment_id}&select=order_id`);
-      if (payment && approved) {
-        await sb(`orders?id=eq.${payment.order_id}`, {
-          method: 'PATCH',
-          body: JSON.stringify({ payment_status: 'PAID', status: 'CONFIRMED' }),
-        });
+
+      if (approved) {
+        const payments = await sb(`payments?id=eq.${paymentId}&select=order_id`);
+        const orderId  = payments?.[0]?.order_id;
+        if (orderId) {
+          await sb(`orders?id=eq.${orderId}`, {
+            method: 'PATCH',
+            body: JSON.stringify({
+              payment_status: 'PAID',
+              status:         'CONFIRMED',
+            }),
+          });
+        }
       }
-      return res.json({ success: true });
+
+      return res.json({ success: true, status: newStatus });
     } catch (err) {
-      return res.status(500).json({ success: false, error: err.message });
+      return safeError(res, 500, 'حدث خطأ في التحقق', err);
     }
   }
 
-  res.status(400).json({ error: 'action غير معروف' });
+  return safeError(res, 400, 'action غير معروف');
 }
