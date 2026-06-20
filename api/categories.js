@@ -1,29 +1,48 @@
-// api/categories.js
+// api/categories.js — Secured v2.0
+import {
+  checkRateLimit, setSecurityHeaders, safeError, getClientIP
+} from './_middleware.js';
+
 const SUPABASE_URL = process.env.SUPABASE_URL  || 'https://digfrefpowwigahzogko.supabase.co';
-const SUPABASE_KEY = process.env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRpZ2ZyZWZwb3d3aWdhaHpvZ2tvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk5ODkwNjMsImV4cCI6MjA5NTU2NTA2M30.Pal6_vz03Uzz3pgM71FH0xoiEwbeN8VIOC-xDc3um6E';
+const SUPABASE_KEY = process.env.SUPABASE_ANON_KEY;
 
 async function supabase(path) {
   const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
     headers: {
-      'apikey': SUPABASE_KEY,
+      'apikey':        SUPABASE_KEY,
       'Authorization': `Bearer ${SUPABASE_KEY}`,
     },
   });
-  if (!res.ok) throw new Error(`Supabase ${res.status}`);
+  if (!res.ok) throw new Error(`DB_ERROR_${res.status}`);
   return res.json();
 }
 
 export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  setSecurityHeaders(res);
   if (req.method === 'OPTIONS') return res.status(200).end();
+  if (req.method !== 'GET') return safeError(res, 405, 'Method not allowed');
+
+  // Rate limit: categories endpoint (higher since it's cached)
+  const ip = getClientIP(req);
+  const rl = checkRateLimit(ip, '/api/categories');
+  res.setHeader('X-RateLimit-Limit',     rl.max);
+  res.setHeader('X-RateLimit-Remaining', rl.remaining);
+  res.setHeader('X-RateLimit-Reset',     Math.ceil(rl.resetAt / 1000));
+
+  if (!rl.allowed) {
+    res.setHeader('Retry-After', Math.ceil((rl.resetAt - Date.now()) / 1000));
+    return safeError(res, 429, 'طلبات كثيرة — انتظر قليلاً');
+  }
+
+  // Cache categories — they rarely change
+  res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=60');
 
   try {
     const cats = await supabase(
-      'categories?select=*,products(count)&is_active=eq.true&order=sort_order.asc'
+      'categories?select=id,name_ar,name_en,slug,icon,sort_order&is_active=eq.true&order=sort_order.asc'
     );
-    res.status(200).json({ success: true, data: cats });
+    return res.status(200).json({ success: true, data: cats });
   } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
+    return safeError(res, 500, 'حدث خطأ في جلب الفئات', err);
   }
 }
