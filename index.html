@@ -1407,46 +1407,102 @@ function sendTicketReply(ticketId) {
 // ═══════════════════════════════════════════════════════════════
 // AUTH
 // ═══════════════════════════════════════════════════════════════
-function doLogin() {
+async function doLogin() {
   const id  = document.getElementById('loginId').value.trim();
   const pwd = document.getElementById('loginPwd').value;
   const err = document.getElementById('loginError');
+  err.style.display='none';
   if (!id||!pwd) { err.textContent='أدخل البريد الإلكتروني وكلمة المرور'; err.style.display='block'; return; }
   const btn = document.getElementById('loginBtn');
   btn.innerHTML='<span class="spinner"></span>'; btn.disabled=true;
-  setTimeout(() => {
-    // Demo auth — في الإنتاج يتصل بـ Supabase Auth
-    S.user = { id:'user-'+Date.now(), firstName:'أحمد', lastName:'محمد', email:id, role:'CUSTOMER' };
-    sessionStorage.setItem('sm_user', JSON.stringify(S.user));
+  try {
+    const res = await fetch('/api/auth?action=login', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ email: id, password: pwd })
+    });
+    const data = await res.json();
+    if (!res.ok || !data.success) {
+      throw new Error(data.error || 'بيانات غير صحيحة');
+    }
+    // Store tokens in sessionStorage (not localStorage — more secure)
+    sessionStorage.setItem('sm_access_token',  data.access_token);
+    sessionStorage.setItem('sm_refresh_token', data.refresh_token);
+    sessionStorage.setItem('sm_user', JSON.stringify(data.user));
+    S.user = data.user;
     updateAuthUI(); err.style.display='none';
-    btn.innerHTML='دخول →'; btn.disabled=false;
-    showToast(`أهلاً ${S.user.firstName} 👋`,'success');
+    showToast(`أهلاً ${S.user.first_name} 👋`,'success');
     navigate('home');
-  }, 800);
+  } catch(e) {
+    err.textContent = e.message || 'حدث خطأ في تسجيل الدخول';
+    err.style.display='block';
+  } finally {
+    btn.innerHTML='دخول →'; btn.disabled=false;
+  }
 }
 
-function doRegister() {
+async function doRegister() {
   const first=document.getElementById('regFirst').value.trim();
   const last =document.getElementById('regLast').value.trim();
   const email=document.getElementById('regEmail').value.trim();
   const phone=document.getElementById('regPhone').value.trim();
   const pwd  =document.getElementById('regPwd').value;
   const err  =document.getElementById('regError');
+  err.style.display='none';
   if(!first||!last||!email||!phone||!pwd){err.textContent='يرجى ملء جميع الحقول';err.style.display='block';return;}
   if(pwd.length<8){err.textContent='كلمة المرور يجب أن تكون 8 أحرف على الأقل';err.style.display='block';return;}
   const btn=document.getElementById('regBtn');
   btn.innerHTML='<span class="spinner"></span>';btn.disabled=true;
-  setTimeout(() => {
-    S.user={id:'user-'+Date.now(),firstName:first,lastName:last,email,phone,role:'CUSTOMER'};
-    sessionStorage.setItem('sm_user',JSON.stringify(S.user));
-    S.loyalty=250; save(); updateAuthUI();
-    btn.innerHTML='إنشاء الحساب';btn.disabled=false;err.style.display='none';
-    showToast('تم إنشاء حسابك 🎉 +250 نقطة ترحيبية','success');
-    navigate('home');
-  },1000);
+  try {
+    const res = await fetch('/api/auth?action=register', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ email, password:pwd, first_name:first, last_name:last, phone })
+    });
+    const data = await res.json();
+    if (!res.ok || !data.success) {
+      throw new Error(data.error || 'حدث خطأ في التسجيل');
+    }
+    showToast('تم إنشاء الحساب 🎉 — تحقق من بريدك الإلكتروني','success');
+    // Auto-login after register
+    await doLoginWithCredentials(email, pwd);
+  } catch(e) {
+    err.textContent = e.message || 'حدث خطأ في إنشاء الحساب';
+    err.style.display='block';
+    btn.innerHTML='إنشاء الحساب';btn.disabled=false;
+  }
 }
 
-function doLogout() {
+async function doLoginWithCredentials(email, pwd) {
+  try {
+    const res = await fetch('/api/auth?action=login', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ email, password: pwd })
+    });
+    const data = await res.json();
+    if (data.success) {
+      sessionStorage.setItem('sm_access_token',  data.access_token);
+      sessionStorage.setItem('sm_refresh_token', data.refresh_token);
+      sessionStorage.setItem('sm_user', JSON.stringify(data.user));
+      S.user = data.user;
+      S.loyalty = data.user.loyalty_points || 250;
+      save(); updateAuthUI();
+      navigate('home');
+    }
+  } catch { /* silent */ }
+}
+
+async function doLogout() {
+  try {
+    const token = sessionStorage.getItem('sm_access_token');
+    if (token) {
+      await fetch('/api/auth?action=logout', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json', 'Authorization': `Bearer ${token}`}
+      }).catch(()=>{});
+    }
+  } catch { /* silent */ }
   S.user=null;S.cart=[];S.orders=[];S.tickets=[];S.loyalty=0;
   sessionStorage.clear(); updateAuthUI(); updateCartUI(); toggleUserDropdown();
   navigate('home'); showToast('تم تسجيل الخروج','success');
@@ -1455,9 +1511,16 @@ function doLogout() {
 function updateAuthUI() {
   const authBtns=document.getElementById('authBtns');
   const userMenu=document.getElementById('userMenu');
+  // Restore from sessionStorage on page load
+  if (!S.user) {
+    const stored = sessionStorage.getItem('sm_user');
+    if (stored) try { S.user = JSON.parse(stored); } catch { S.user = null; }
+  }
   if(S.user){
     authBtns.style.display='none';userMenu.style.display='block';
-    document.getElementById('userNameHeader').textContent=S.user.firstName;
+    // Support both firstName (old demo) and first_name (Supabase)
+    const name = S.user.first_name || S.user.firstName || 'مستخدم';
+    document.getElementById('userNameHeader').textContent=name;
   } else {
     authBtns.style.display='block';userMenu.style.display='none';
   }
