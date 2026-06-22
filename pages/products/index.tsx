@@ -1,33 +1,40 @@
 import Head from 'next/head'
 import Link from 'next/link'
 import { useState } from 'react'
-import { Filter, Search } from 'lucide-react'
+import { Search } from 'lucide-react'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
+import productsJson from '@/data/products.json'
+import { categoryMeta, imageFallbackMap, defaultFallbackImage } from '@/data/categoryMeta'
 
-const products = [
-  { id: 1, name: 'كمامة N95 طبية', price: 850, unit: 'علبة/50 قطعة', cat: 'ppe', stock: true, badge: 'الأكثر طلباً' },
-  { id: 2, name: 'قفازات لاتكس معقمة', price: 450, unit: 'علبة/100 قطعة', cat: 'ppe', stock: true, badge: null },
-  { id: 3, name: 'محقنة ستيرايل 5ml', price: 320, unit: 'علبة/100 قطعة', cat: 'injection', stock: true, badge: null },
-  { id: 4, name: 'جهاز IV وتسريب', price: 180, unit: 'قطعة', cat: 'injection', stock: true, badge: null },
-  { id: 5, name: 'شاش طبي معقم 10x10', price: 550, unit: 'علبة/50 قطعة', cat: 'wound', stock: true, badge: null },
-  { id: 6, name: 'كانيولا وريدية G20', price: 280, unit: 'علبة/50 قطعة', cat: 'injection', stock: true, badge: 'جديد' },
-  { id: 7, name: 'بيتادين 10% لتر', price: 620, unit: 'زجاجة', cat: 'sterilization', stock: false, badge: null },
-  { id: 8, name: 'كحول 70% معقم', price: 390, unit: 'لتر', cat: 'sterilization', stock: true, badge: null },
-  { id: 9, name: 'روب طبي واقٍ', price: 1200, unit: 'قطعة', cat: 'ppe', stock: true, badge: null },
-  { id: 10, name: 'أنابيب اختبار EDTA', price: 450, unit: 'علبة/100 قطعة', cat: 'lab', stock: true, badge: null },
-  { id: 11, name: 'خيط جراحي Vicryl 2-0', price: 280, unit: 'قطعة', cat: 'surgical', stock: true, badge: null },
-  { id: 12, name: 'ضمادة هيدروكولويد', price: 350, unit: 'علبة/10 قطع', cat: 'wound', stock: true, badge: null },
-]
+// Use local data/products.json when present
+const products = (productsJson as any[]).map(p => {
+  const category = categoryMeta[p.category_id]
+  const imageUrl = p.image_url || null
+  const fallbackImage = imageFallbackMap[p.slug] || defaultFallbackImage
 
+  return {
+    id: p.slug || p.id || p.sku,
+    name: p.name_ar || p.name_en,
+    price: p.price || 0,
+    unit: p.unit || p.short_desc || '',
+    cat: category?.slug || 'uncategorized',
+    categoryLabel: category?.label || 'عام',
+    slug: p.slug,
+    stock: typeof p.stock === 'number' ? p.stock > 0 : (p.stock === true),
+    badge: p.badge || (p.featured ? 'الأكثر طلباً' : null),
+    image_url: imageUrl || fallbackImage,
+  }
+})
+
+// Build category tabs dynamically from imported products
+const _categoryMap: Record<string, { id: string; label: string }> = {}
+products.forEach(p => {
+  if (!_categoryMap[p.cat]) _categoryMap[p.cat] = { id: p.cat, label: p.categoryLabel || p.cat }
+})
 const categories = [
   { id: 'all', label: 'الكل' },
-  { id: 'ppe', label: 'وقاية شخصية' },
-  { id: 'surgical', label: 'جراحية' },
-  { id: 'lab', label: 'مختبرات' },
-  { id: 'injection', label: 'حقن وتسريب' },
-  { id: 'wound', label: 'رعاية الجروح' },
-  { id: 'sterilization', label: 'تعقيم' },
+  ...Object.values(_categoryMap),
 ]
 
 export default function ProductsPage() {
@@ -104,8 +111,16 @@ export default function ProductsPage() {
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {filtered.map(product => (
             <Link key={product.id} href={`/products/${product.id}`} className="bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-md transition-all group">
-              <div className="bg-gradient-to-br from-gray-100 to-gray-200 h-40 flex items-center justify-center relative">
-                <span className="text-5xl">💊</span>
+                <div className="bg-gradient-to-br from-gray-100 to-gray-200 h-40 flex items-center justify-center relative">
+                  {product.image_url ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={product.image_url} alt={product.name} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={(e:any)=>{e.currentTarget.onerror=null; e.currentTarget.style.display='none'}}/>
+                  ) : (
+                    <span className="text-5xl">💊</span>
+                  )}
+                  <div className="absolute left-3 top-3 bg-white/90 text-xs font-semibold text-gray-700 px-2 py-1 rounded-full shadow-sm">
+                    {product.categoryLabel}
+                  </div>
                 {product.badge && (
                   <span className={`absolute top-2 right-2 text-xs font-bold px-2 py-0.5 rounded-full ${
                     product.badge === 'جديد' ? 'bg-blue-500 text-white' : 'bg-red-500 text-white'

@@ -523,4 +523,30 @@
     window.__sudanmedAnimations = { reinit: reinitAll, init };
   }
 
+  // Export a few small helper functions as globals for legacy pages
+  // so inline `onclick` handlers like `scrollToCats()` still work.
+  window.scrollToCats = function scrollToCats() {
+    const el = document.querySelector('#categories') || document.querySelector('.categories') || document.querySelector('[data-categories]');
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
+  window.openTracking = function openTracking() {
+    const panel = document.querySelector('#tracking') || document.querySelector('[data-tracking]');
+    if (panel) {
+      panel.style.display = '';
+      panel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    } else if (typeof window.__sudanmedAnimations?.openTracking === 'function') {
+      try { window.__sudanmedAnimations.openTracking(); } catch (e) { /* ignore */ }
+    }
+  };
+
+  window.showAll = function showAll(selector) {
+    const root = selector ? document.querySelector(selector) : document;
+    if (!root) return;
+    root.querySelectorAll('.hidden, [hidden]').forEach(el => {
+      el.classList.remove('hidden');
+      el.removeAttribute('hidden');
+    });
+  };
+
 })();

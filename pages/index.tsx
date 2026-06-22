@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
+import productsJson from '@/data/products.json'
 
 /* ── ألوان العلم السوداني ── */
 const C = {
@@ -25,16 +26,16 @@ const categories = [
   { id: 'sterilization', icon: '🧴', nameAr: 'تعقيم وتطهير',    desc: 'كحول، بيتادين، معقمات',     count: 45  },
 ]
 
-const featuredProducts = [
-  { id: 1, name: 'كمامة N95 طبية',       price: 850, unit: 'علبة/50 قطعة', badge: 'الأكثر طلباً', stock: true  },
-  { id: 2, name: 'قفازات لاتكس معقمة',  price: 450, unit: 'علبة/100 قطعة', badge: 'عرض',         stock: true  },
-  { id: 3, name: 'محقنة ستيرايل 5ml',   price: 320, unit: 'علبة/100 قطعة', badge: null,           stock: true  },
-  { id: 4, name: 'جهاز IV وتسريب',      price: 180, unit: 'قطعة',          badge: null,           stock: true  },
-  { id: 5, name: 'شاش طبي معقم 10x10',  price: 550, unit: 'علبة/50 قطعة', badge: null,           stock: true  },
-  { id: 6, name: 'كانيولا وريدية G20',  price: 280, unit: 'علبة/50 قطعة', badge: 'جديد',        stock: true  },
-  { id: 7, name: 'بيتادين 10% لتر',     price: 620, unit: 'زجاجة',         badge: null,           stock: false },
-  { id: 8, name: 'كحول 70% معقم',       price: 390, unit: 'لتر',           badge: null,           stock: true  },
-]
+// Prefer local catalog data when available
+const featuredProducts = (productsJson as any[]).slice(0, 8).map(p => ({
+  id: p.id || p.sku || Math.random(),
+  name: p.name_ar || p.name_en || 'منتج',
+  price: p.price || 0,
+  unit: p.unit || p.short_desc || '',
+  badge: p.badge || (p.featured ? 'الأكثر طلباً' : null),
+  stock: typeof p.stock === 'number' ? p.stock > 0 : (p.stock === true),
+  image_url: p.image_url || null,
+}))
 
 const stats = [
   { value: 500,  suffix: '+',  label: 'منتج طبي'        },
@@ -122,7 +123,16 @@ function ProductCard({ product }: { product: typeof featuredProducts[0] }) {
           justifyContent: 'center',
           position: 'relative',
         }}>
-          <span style={{ fontSize: 52, filter: 'drop-shadow(0 0 12px rgba(210,16,52,0.5))' }}>💊</span>
+          {product.image_url ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={product.image_url}
+              alt={product.name}
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              onError={(e:any) => { e.currentTarget.onerror = null; e.currentTarget.style.display='none'; }}
+            />
+          ) : (
+            <span style={{ fontSize: 52, filter: 'drop-shadow(0 0 12px rgba(210,16,52,0.5))' }}>💊</span>
+          )}
 
           {product.badge && (
             <span style={{
